@@ -17,6 +17,10 @@ const SETTINGS: SettingMeta[] = [
   { id: 'skin', labelKey: 'setting_skin', type: 'select', implemented: true, options: ['classic','neon','ghost'], description: 'Player skin selection' },
   { id: 'volume', labelKey: 'setting_volume', type: 'range', implemented: true, description: 'Master volume level' },
   { id: 'maxLives', labelKey: 'setting_maxLives', type: 'number', implemented: true, description: 'Starting extra lives' },
+  { id: 'invertControls', labelKey: 'setting_invertControls', type: 'toggle', implemented: true, description: 'Invert left/right controls' },
+  { id: 'showFPS', labelKey: 'setting_showFPS', type: 'toggle', implemented: true, description: 'Show FPS counter in top corner' },
+  { id: 'controlScheme', labelKey: 'setting_controlScheme', type: 'select', implemented: true, options: ['arrow','wasd'], description: 'Preferred control layout' },
+  { id: 'colorBlindMode', labelKey: 'setting_colorBlindMode', type: 'select', implemented: true, options: ['none','protanopia','deuteranopia'], description: 'Color-blind accessibility mode' },
   { id: 'highContrast', label: 'High Contrast Mode', type: 'toggle', implemented: false, description: 'Experimental accessibility mode (coming soon)' },
   { id: 'onlineLeaderboard', label: 'Online Leaderboards', type: 'toggle', implemented: false, description: 'Upload scores to global leaderboard (not yet implemented)' }
   ,{ id: 'locale', labelKey: 'setting_language', type: 'select', implemented: true, options: ['en','es','pl'], description: 'UI Language' }

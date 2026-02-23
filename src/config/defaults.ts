@@ -15,7 +15,11 @@ export const DEFAULT_CONFIG = {
     skin: 'classic',
     volume: 70,
     maxLives: 3,
-    locale: 'en'
+    locale: 'en',
+    invertControls: false,
+    showFPS: false,
+    controlScheme: 'arrow',
+    colorBlindMode: 'none'
   },
   // leave empty here in source control; prefer using VITE_DISCORD_WEBHOOK_URL
   discordWebhook: '' as string,
