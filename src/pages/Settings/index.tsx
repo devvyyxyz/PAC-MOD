@@ -16,6 +16,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const toast = useToast();
   const [savedKey, setSavedKey] = useState<string | null>(null);
   const { t, setLocale } = useI18n();
+  const [section, setSection] = useState<string>('all');
 
   useEffect(()=>{
     const cfg = config.loadConfig();
@@ -80,22 +81,43 @@ export default function Settings({onBack}:{onBack:()=>void}){
     setLocal({...defaults});
   }
 
+  const SECTIONS: { id: string; label: string; items: string[] }[] = [
+    { id: 'all', label: t('settings_section_all') || 'All', items: SETTINGS.map(s=>s.id) },
+    { id: 'audio', label: t('settings_section_audio') || 'Audio', items: ['sound','music','volume'] },
+    { id: 'controls', label: t('settings_section_controls') || 'Controls', items: ['invertControls','controlScheme','maxLives'] },
+    { id: 'gameplay', label: t('settings_section_gameplay') || 'Gameplay', items: ['difficulty','skin','showFPS'] },
+    { id: 'accessibility', label: t('settings_section_accessibility') || 'Accessibility', items: ['colorBlindMode','highContrast'] }
+  ];
+
+  const activeSection = SECTIONS.find(s=>s.id===section) || SECTIONS[0];
+  const visibleSettings = SETTINGS.filter(s=> activeSection.items.includes(s.id));
+
   return (
     <Layout title={t('settings_title')} subtitle={t('settings_subtitle')} sticky>
       <div className={styles.wrap}>
         <div className={styles.stage}>
 
-          <Grid columns={{sm:1,md:2,lg:3}} gap={12} className={styles.grid}>
-            {SETTINGS.map(s => (
-              <Card key={s.id} title={t(s.labelKey || s.label || s.id)} className={`${s.implemented===false?styles.disabled:''} ${s.id==='difficulty' || s.id==='skin'?styles.full:''}`}>
-                <div className={styles.cardDesc}>{s.description}</div>
-                <div>
-                  {renderControl(s)}
-                </div>
-                {s.implemented === false ? <div style={{marginTop:8}}><small style={{color:'var(--muted)'}}>{t('coming_soon')}</small></div> : null}
-              </Card>
-            ))}
-          </Grid>
+          <div className={styles.layout}>
+            <aside className={styles.left}>
+              <ul className={styles.navList}>
+                {SECTIONS.map(sec => (
+                  <li key={sec.id} className={`${styles.navItem} ${section===sec.id?styles.active:''}`} onClick={()=>setSection(sec.id)}>{sec.label}</li>
+                ))}
+              </ul>
+            </aside>
+
+            <section className={styles.right}>
+              {visibleSettings.map(s => (
+                <Card key={s.id} title={t(s.labelKey || s.label || s.id)} className={`${s.implemented===false?styles.disabled:''} ${s.id==='difficulty' || s.id==='skin'?styles.full:''}`}>
+                  <div className={styles.cardDesc}>{s.description}</div>
+                  <div>
+                    {renderControl(s)}
+                  </div>
+                  {s.implemented === false ? <div style={{marginTop:8}}><small style={{color:'var(--muted)'}}>{t('coming_soon')}</small></div> : null}
+                </Card>
+              ))}
+            </section>
+          </div>
 
           <div style={{marginTop:16,display:'flex',gap:8,justifyContent:'center',alignItems:'center'}}>
             <Button variant="primary" onClick={handleApply}>{t('settings_apply')}</Button>
