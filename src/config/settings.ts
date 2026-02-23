@@ -25,8 +25,8 @@ const SETTINGS: SettingMeta[] = [
   { id: 'keyboardNavigation', labelKey: 'setting_keyboardNavigation', category: 'controls', type: 'toggle', implemented: true, description: 'Enable keyboard navigation in menus' },
   { id: 'mouseNavigation', labelKey: 'setting_mouseNavigation', category: 'controls', type: 'toggle', implemented: true, description: 'Enable mouse navigation in menus' },
   { id: 'mouseSensitivity', labelKey: 'setting_mouseSensitivity', category: 'controls', type: 'range', implemented: true, description: 'Mouse sensitivity for menu interactions' },
-  { id: 'highContrast', label: 'High Contrast Mode', category: 'accessibility', type: 'toggle', implemented: false, description: 'Experimental accessibility mode (coming soon)' },
-  { id: 'onlineLeaderboard', label: 'Online Leaderboards', category: 'online', type: 'toggle', implemented: false, description: 'Upload scores to global leaderboard (not yet implemented)' },
+  { id: 'highContrast', labelKey: 'setting_highContrast', category: 'accessibility', type: 'toggle', implemented: false, description: 'Experimental accessibility mode (coming soon)' },
+  { id: 'onlineLeaderboard', labelKey: 'setting_onlineLeaderboard', category: 'online', type: 'toggle', implemented: false, description: 'Upload scores to global leaderboard (not yet implemented)' },
   { id: 'locale', labelKey: 'setting_language', category: 'general', type: 'select', implemented: true, options: ['en','es','pl'], description: 'UI Language' }
 ];
 

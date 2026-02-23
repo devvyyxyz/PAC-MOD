@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './Controls.module.css';
+import { useI18n } from '..';
 
 type Props = {
   value: string;
@@ -10,12 +11,13 @@ type Props = {
 };
 
 export default function Select({value,onChange,options,disabled,saved}:Props){
+  const { t } = useI18n();
   return (
     <div className={styles.wrap}>
       <select className={styles.select} value={value} onChange={(e)=>onChange(e.target.value)} disabled={disabled}>
-        {options.map(o=> <option key={o} value={o}>{o}</option>)}
+        {options.map(o=> <option key={o} value={o}>{t(o)}</option>)}
       </select>
-      {saved ? <div className={styles.saved}>Saved</div> : null}
+      {saved ? <div className={styles.saved}>{t('settings_saved') || 'Saved'}</div> : null}
     </div>
   );
 }
