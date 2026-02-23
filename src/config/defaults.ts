@@ -20,6 +20,8 @@ export const DEFAULT_CONFIG = {
     showFPS: false,
     controlScheme: 'arrow',
     colorBlindMode: 'none',
+    highContrast: false,
+    onlineLeaderboard: false,
     keyboardNavigation: true,
     mouseNavigation: true,
     mouseSensitivity: 50

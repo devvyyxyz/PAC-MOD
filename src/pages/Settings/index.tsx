@@ -112,15 +112,23 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const activeSection = withLabels.find(s=>s.id===section) || withLabels[0];
   const visibleSettings = SETTINGS.filter(s=> activeSection.items.includes(s.id));
 
-  const keyboardEnabled = local.keyboardNavigation !== false;
-  const mouseEnabled = local.mouseNavigation !== false;
+  // local contains unsaved edits; saved* hold persisted values until Apply is pressed
+  // const keyboardEnabled = local.keyboardNavigation !== false;
+  // const mouseEnabled = local.mouseNavigation !== false;
+  const [savedKeyboardEnabled, setSavedKeyboardEnabled] = React.useState<boolean>(()=>{
+    try{ return config.loadConfig().settings?.keyboardNavigation !== false; }catch(e){ return true; }
+  });
+  const [savedMouseEnabled, setSavedMouseEnabled] = React.useState<boolean>(()=>{
+    try{ return config.loadConfig().settings?.mouseNavigation !== false; }catch(e){ return true; }
+  });
   const visibleSettingsCount = visibleSettings.length;
 
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
     length: visibleSettingsCount,
     controlScheme: (local.controlScheme as 'arrow'|'wasd') || 'arrow',
     axis: 'vertical',
-    enabled: keyboardEnabled,
+    // only enable navigation hook when keyboard navigation is enabled in SAVED config, not local edits
+    enabled: savedKeyboardEnabled,
     starting: false,
     btnRefs: btnRefs as any,
     containerRef: rightColumnRef as any,
@@ -144,10 +152,23 @@ export default function Settings({onBack}:{onBack:()=>void}){
     }
   });
 
+  // keep savedKeyboardEnabled in sync with persisted config
+  React.useEffect(()=>{
+    function onCfg(e: Event){
+      try{
+        const detail = (e as CustomEvent).detail as any;
+        setSavedKeyboardEnabled(detail?.settings?.keyboardNavigation !== false);
+        setSavedMouseEnabled(detail?.settings?.mouseNavigation !== false);
+      }catch(e){}
+    }
+    window.addEventListener('pacman.config.changed', onCfg as EventListener);
+    return ()=> window.removeEventListener('pacman.config.changed', onCfg as EventListener);
+  },[]);
+
   // Global keyboard handler to switch focus between left column (nav + left buttons)
   // and right column (settings rows) using arrow keys or WASD.
   React.useEffect(()=>{
-    if(!keyboardEnabled) return;
+    if(!savedKeyboardEnabled) return;
     function idxOf(el: Element | null, arr: Array<Element | null>){
       if(!el) return -1;
       // try direct match first
@@ -206,7 +227,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
     window.addEventListener('keydown', handleKey);
     return ()=> window.removeEventListener('keydown', handleKey);
-  }, [keyboardEnabled, navRefs, leftButtonRefs, btnRefs, visibleSettingsCount]);
+  }, [savedKeyboardEnabled, navRefs, leftButtonRefs, btnRefs, visibleSettingsCount]);
 
   return (
     <Layout title={t('settings_title')} subtitle={t('settings_subtitle')} sticky>
@@ -347,7 +368,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     className={styles.settingRow}
                     tabIndex={0}
                     ref={(el) => { btnRefs.current[i] = el; }}
-                    onMouseEnter={() => { if(mouseEnabled) onMouseEnter(i); }}
+                    onMouseEnter={() => { if(savedMouseEnabled) onMouseEnter(i); }}
                     onFocus={() => { setActiveInput && setActiveInput('keyboard'); setFocusIndex(i); }}
                     onKeyDown={(e)=>{
                       const k = e.key.toLowerCase();
