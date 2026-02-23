@@ -32,6 +32,13 @@
 .settingInfo .cardLabel{color:var(--muted);font-weight:700;margin-bottom:6px}
 .settingInfo .cardDesc{margin:0;font-size:13px;color:rgba(255,255,255,0.65)}
 
+/* highlight card when hovered or keyboard-focused */
+.settingRow:hover, .settingRow:focus, .settingRow[data-focused="true"]{
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 10px;
+}
+
 .layout{display:flex;gap:20px;margin-top:12px;flex:1;overflow:hidden}
 .left{width:240px;flex:0 0 240px;align-self:flex-start;position:sticky;top:24px;overflow:auto}
 .navList{list-style:none;margin:0;padding:8px;border-radius:8px;background:transparent}
