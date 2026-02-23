@@ -116,7 +116,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
     length: visibleSettingsCount,
     controlScheme: (local.controlScheme as 'arrow'|'wasd') || 'arrow',
-    axis: 'horizontal',
+    axis: 'vertical',
     enabled: keyboardEnabled,
     starting: false,
     btnRefs: btnRefs as any,
