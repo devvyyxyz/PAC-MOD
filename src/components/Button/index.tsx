@@ -6,7 +6,7 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   full?: boolean;
 };
 
-export default function Button({variant='secondary', full=false, className, children, ...rest}: Props){
+const Button = React.forwardRef<HTMLButtonElement, Props>(function Button({variant='secondary', full=false, className, children, ...rest}: Props, ref){
   const cls = [
     styles.btn,
     className || '',
@@ -16,8 +16,12 @@ export default function Button({variant='secondary', full=false, className, chil
   ].filter(Boolean).join(' ');
 
   return (
-    <button className={cls} {...rest}>
+    <button ref={ref} className={cls} {...rest}>
       {children}
     </button>
   );
-}
+});
+
+Button.displayName = 'Button';
+
+export default Button;

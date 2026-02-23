@@ -70,6 +70,13 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
   },[focusIndex]);
 
   React.useEffect(()=>{
+    // mark the focused button with a data attribute so CSS can reflect keyboard-only focus
+    btnRefs.current.forEach((b, i) => {
+      try{ if(b) { if(i === focusIndex) { b.setAttribute('data-focused', 'true'); } else { b.removeAttribute('data-focused'); } } }catch(_){}
+    });
+  }, [focusIndex]);
+
+  React.useEffect(()=>{
     function handleKey(e: KeyboardEvent){
       if(!keyboardEnabled) return;
       if(starting) return;
@@ -118,11 +125,31 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
             </div>
 
         <div className={styles.controls} role="navigation" aria-label="Main menu">
-          <Button variant="primary" className={styles.menuButton} onClick={handleStart} autoFocus aria-disabled={starting}>{starting ? t('starting') : t('start_game')}</Button>
+          <Button
+            variant="primary"
+            className={styles.menuButton}
+            onClick={handleStart}
+            autoFocus
+            aria-disabled={starting}
+            ref={(el: HTMLButtonElement|null) => { btnRefs.current[0] = el; }}
+            onMouseEnter={() => { if(mouseEnabled) setFocusIndex(0); }}
+          >{starting ? t('starting') : t('start_game')}</Button>
 
           <div className={styles.row}>
-            <Button variant="secondary" className={styles.menuButton} onClick={handleSettings}>{t('menu_settings')}</Button>
-            <Button variant="secondary" className={styles.menuButton} onClick={handleCredits}>{t('menu_credits')}</Button>
+            <Button
+              variant="secondary"
+              className={styles.menuButton}
+              onClick={handleSettings}
+              ref={(el: HTMLButtonElement|null) => { btnRefs.current[1] = el; }}
+              onMouseEnter={() => { if(mouseEnabled) setFocusIndex(1); }}
+            >{t('menu_settings')}</Button>
+            <Button
+              variant="secondary"
+              className={styles.menuButton}
+              onClick={handleCredits}
+              ref={(el: HTMLButtonElement|null) => { btnRefs.current[2] = el; }}
+              onMouseEnter={() => { if(mouseEnabled) setFocusIndex(2); }}
+            >{t('menu_credits')}</Button>
             {/* simulate error removed */}
           </div>
         </div>
