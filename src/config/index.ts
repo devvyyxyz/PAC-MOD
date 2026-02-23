@@ -19,6 +19,11 @@ export function saveConfig(cfg: Partial<AppConfig>){
     const existing = loadConfig();
     const merged = {...existing, ...cfg};
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    try{
+      // notify other parts of the app about config changes
+      const ev = new CustomEvent('pacman.config.changed', { detail: merged });
+      window.dispatchEvent(ev);
+    }catch(e){}
     return merged;
   }catch(e){
     console.error('Failed to save config', e);
