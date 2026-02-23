@@ -81,14 +81,16 @@ export default function Settings({onBack}:{onBack:()=>void}){
     setLocal({...defaults});
   }
 
-  // Build sections dynamically from `SETTINGS` categories. Keep 'all' first.
+  // Build sections dynamically from `SETTINGS` categories.
   const CATEGORY_ORDER = ['audio','controls','gameplay','accessibility','online','general'];
   const foundCategories = Array.from(new Set(SETTINGS.map(s => s.category || 'general')));
   const orderedCategories = CATEGORY_ORDER.filter(c => foundCategories.includes(c)).concat(foundCategories.filter(c => !CATEGORY_ORDER.includes(c)));
-  const SECTIONS: { id: string; label: string; items: string[] }[] = [
-    { id: 'all', label: '', items: SETTINGS.map(s => s.id) },
-    ...orderedCategories.map(cat => ({ id: cat, label: '', items: SETTINGS.filter(s => (s.category || 'general') === cat).map(s => s.id) }))
-  ];
+  const SECTIONS: { id: string; label: string; items: string[] }[] = orderedCategories.map(cat => ({ id: cat, label: '', items: SETTINGS.filter(s => (s.category || 'general') === cat).map(s => s.id) }));
+
+  // default selected section: first category
+  React.useEffect(()=>{
+    if(!section && SECTIONS.length){ setSection(SECTIONS[0].id); }
+  },[SECTIONS, section]);
 
   function localLabel(key: string, fallback: string){
     const val = t(key);
@@ -96,7 +98,6 @@ export default function Settings({onBack}:{onBack:()=>void}){
   }
 
   const withLabels = SECTIONS.map(s => ({ ...s, label: (
-    s.id === 'all' ? localLabel('settings_section_all','All') :
     // prefer explicit translation key if present, otherwise humanize the id
     (t(`settings_section_${s.id}`) !== `settings_section_${s.id}` ? t(`settings_section_${s.id}`) : (s.id.charAt(0).toUpperCase() + s.id.slice(1)))
   )}));
