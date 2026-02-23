@@ -81,12 +81,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
     setLocal({...defaults});
   }
 
+  // Build sections dynamically from `SETTINGS` categories. Keep 'all' first.
+  const CATEGORY_ORDER = ['audio','controls','gameplay','accessibility','online','general'];
+  const foundCategories = Array.from(new Set(SETTINGS.map(s => s.category || 'general')));
+  const orderedCategories = CATEGORY_ORDER.filter(c => foundCategories.includes(c)).concat(foundCategories.filter(c => !CATEGORY_ORDER.includes(c)));
   const SECTIONS: { id: string; label: string; items: string[] }[] = [
-    { id: 'all', label: '', items: SETTINGS.map(s=>s.id) },
-    { id: 'audio', label: '', items: ['sound','music','volume'] },
-    { id: 'controls', label: '', items: ['invertControls','controlScheme','maxLives'] },
-    { id: 'gameplay', label: '', items: ['difficulty','skin','showFPS'] },
-    { id: 'accessibility', label: '', items: ['colorBlindMode','highContrast'] }
+    { id: 'all', label: '', items: SETTINGS.map(s => s.id) },
+    ...orderedCategories.map(cat => ({ id: cat, label: '', items: SETTINGS.filter(s => (s.category || 'general') === cat).map(s => s.id) }))
   ];
 
   function localLabel(key: string, fallback: string){
@@ -96,10 +97,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
   const withLabels = SECTIONS.map(s => ({ ...s, label: (
     s.id === 'all' ? localLabel('settings_section_all','All') :
-    s.id === 'audio' ? localLabel('settings_section_audio','Audio') :
-    s.id === 'controls' ? localLabel('settings_section_controls','Controls') :
-    s.id === 'gameplay' ? localLabel('settings_section_gameplay','Gameplay') :
-    s.id === 'accessibility' ? localLabel('settings_section_accessibility','Accessibility') : s.id
+    // prefer explicit translation key if present, otherwise humanize the id
+    (t(`settings_section_${s.id}`) !== `settings_section_${s.id}` ? t(`settings_section_${s.id}`) : (s.id.charAt(0).toUpperCase() + s.id.slice(1)))
   )}));
 
   const activeSection = withLabels.find(s=>s.id===section) || withLabels[0];
