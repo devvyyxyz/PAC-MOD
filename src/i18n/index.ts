@@ -56,6 +56,7 @@ const TRANSLATIONS: Record<string, Record<string,string>> = {
     report_sent_message: 'Thanks — the report was submitted.',
     report_failed_title: 'Report failed',
     report_failed_message_prefix: 'Failed to send report: '
+    ,report_failed_no_endpoint: 'Failed to send report — reporting endpoint not configured.'
   },
   es: {
     settings_title: 'AJUSTES',
@@ -114,6 +115,7 @@ const TRANSLATIONS: Record<string, Record<string,string>> = {
     report_sent_message: 'Gracias — el informe fue enviado.',
     report_failed_title: 'Error al enviar informe',
     report_failed_message_prefix: 'No se pudo enviar el informe: '
+    ,report_failed_no_endpoint: 'No se pudo enviar el informe — el punto de recepción no está configurado.'
   },
   pl: {
     settings_title: 'USTAWIENIA',
@@ -172,6 +174,7 @@ const TRANSLATIONS: Record<string, Record<string,string>> = {
     report_sent_message: 'Dzięki — raport został wysłany.',
     report_failed_title: 'Wysyłanie nie powiodło się',
     report_failed_message_prefix: 'Nie udało się wysłać raportu: '
+    ,report_failed_no_endpoint: 'Nie udało się wysłać raportu — brak skonfigurowanego punktu odbioru.'
   }
 };
 

@@ -22,7 +22,13 @@ export default function ErrorPage({error, info, onBack}:{error:Error, info?:Reac
     }else{
       const reason = res.reason || `status ${res.status}`;
       setResult(`failed: ${reason}`);
-      try{ toast.show({ title: t('report_failed_title'), message: t('report_failed_message_prefix') + reason, type: 'error', duration: 6000 }); }catch{}
+      try{
+        if(reason === 'no-reporting-endpoint'){
+          toast.show({ title: t('report_failed_title'), message: t('report_failed_no_endpoint'), type: 'error', duration: 8000 });
+        }else{
+          toast.show({ title: t('report_failed_title'), message: t('report_failed_message_prefix') + reason, type: 'error', duration: 6000 });
+        }
+      }catch{}
     }
   }
 

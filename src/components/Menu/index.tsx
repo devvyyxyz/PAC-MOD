@@ -17,8 +17,10 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
   // keyboard navigation (focus + input-source tracking)
   const btnRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const [controlScheme, setControlScheme] = React.useState<'arrow'|'wasd'>('arrow');
+  const isDev = Boolean((import.meta as any).env?.DEV);
+  const buttonCount = isDev ? 4 : 3;
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
-    length: 3,
+    length: buttonCount,
     controlScheme: controlScheme,
     enabled: true,
     starting: starting,
@@ -27,6 +29,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
       if(idx === 0) handleStart();
       if(idx === 1) handleSettings();
       if(idx === 2) handleCredits();
+      if(idx === 3) handleError();
     }
   });
   
@@ -129,7 +132,16 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
               ref={(el: HTMLButtonElement|null) => { btnRefs.current[2] = el; }}
               onMouseEnter={() => { if(mouseEnabled) onMouseEnter(2); }}
             >{t('menu_credits')}</Button>
-            {/* simulate error removed */}
+            {isDev ? (
+              <Button
+                variant="secondary"
+                className={styles.menuButton}
+                onClick={handleError}
+                ref={(el: HTMLButtonElement|null) => { btnRefs.current[3] = el; }}
+                onMouseEnter={() => { if(mouseEnabled) onMouseEnter(3); }}
+                title="Simulate Error (dev)"
+              >{t('menu_simulate_error')}</Button>
+            ) : null}
           </div>
         </div>
 
