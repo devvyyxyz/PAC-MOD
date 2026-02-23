@@ -36,7 +36,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
           <div className={styles.row}>
             <Button variant="secondary" className={styles.menuButton} onClick={handleSettings}>{t('menu_settings')}</Button>
             <Button variant="secondary" className={styles.menuButton} onClick={handleCredits}>{t('menu_credits')}</Button>
-            <Button variant="secondary" className={styles.menuButton} onClick={handleError}>{t('menu_simulate_error')}</Button>
+            {/* simulate error removed */}
           </div>
         </div>
 
