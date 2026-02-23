@@ -20,6 +20,9 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const [section, setSection] = useState<string>('all');
   const btnRefs = React.useRef<Array<HTMLDivElement | null>>([]);
   const navRefs = React.useRef<Array<HTMLLIElement | null>>([]);
+  const leftButtonRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const leftColumnRef = React.useRef<HTMLElement | null>(null);
+  const rightColumnRef = React.useRef<HTMLElement | null>(null);
 
   useEffect(()=>{
     const cfg = config.loadConfig();
@@ -120,6 +123,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
     enabled: keyboardEnabled,
     starting: false,
     btnRefs: btnRefs as any,
+    containerRef: rightColumnRef as any,
     onActivate: (idx) => {
       // focus or activate the control inside the setting row
       const root = btnRefs.current[idx];
@@ -130,6 +134,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
         // toggle checkboxes directly
         if(ctrl.tagName === 'INPUT' && (ctrl as HTMLInputElement).type === 'checkbox'){
           (ctrl as HTMLInputElement).click();
+          // clicking can blur focus; restore focus to the row so keyboard navigation keeps working
+          setTimeout(()=>{ try{ root.focus(); }catch(e){} }, 0);
           return;
         }
         // otherwise focus the control so native keys work (space, arrows)
@@ -138,13 +144,77 @@ export default function Settings({onBack}:{onBack:()=>void}){
     }
   });
 
+  // Global keyboard handler to switch focus between left column (nav + left buttons)
+  // and right column (settings rows) using arrow keys or WASD.
+  React.useEffect(()=>{
+    if(!keyboardEnabled) return;
+    function idxOf(el: Element | null, arr: Array<Element | null>){
+      if(!el) return -1;
+      // try direct match first
+      const direct = arr.findIndex(a => a === el);
+      if(direct >= 0) return direct;
+      // fallback: find the first element in arr that contains the active element
+      return arr.findIndex(a => a && a.contains(el));
+    }
+
+    function handleKey(e: KeyboardEvent){
+      const k = e.key.toLowerCase();
+      if(!['arrowleft','arrowright','arrowup','arrowdown','a','d','w','s'].includes(k)) return;
+      const active = document.activeElement as Element | null;
+      // build left column list: nav items then left buttons
+      const leftList: Array<HTMLElement | null> = [];
+      navRefs.current.forEach(n=> leftList.push(n));
+      leftButtonRefs.current.forEach(b=> leftList.push(b));
+
+      const rightList = btnRefs.current as Array<HTMLElement | null>;
+
+      // determine which column currently contains focus using container refs
+      const inLeft = leftColumnRef.current ? leftColumnRef.current.contains(active) : false;
+      const inRight = rightColumnRef.current ? rightColumnRef.current.contains(active) : false;
+
+      const leftIdx = idxOf(active, leftList as any);
+      const rightIdx = idxOf(active, rightList as any);
+
+      // up/down within current column (prefer containment check)
+      if(k === 'arrowup' || k === 'w'){
+        e.preventDefault();
+        if(inLeft){ const next = Math.max(0, leftIdx - 1); leftList[next]?.focus(); }
+        else if(inRight){ const next = Math.max(0, rightIdx - 1); rightList[next]?.focus(); }
+        return;
+      }
+      if(k === 'arrowdown' || k === 's'){
+        e.preventDefault();
+        if(inLeft){ const next = Math.min(leftList.length - 1, leftIdx + 1); leftList[next]?.focus(); }
+        else if(inRight){ const next = Math.min(rightList.length - 1, rightIdx + 1); rightList[next]?.focus(); }
+        return;
+      }
+
+      // horizontal: move between columns keeping index
+      if(k === 'arrowright' || k === 'd'){
+        e.preventDefault();
+        if(leftIdx >= 0){ const target = Math.min(rightList.length - 1, leftIdx); rightList[target]?.focus(); }
+        else if(rightIdx >= 0){ /* already right side */ }
+        return;
+      }
+      if(k === 'arrowleft' || k === 'a'){
+        e.preventDefault();
+        if(rightIdx >= 0){ const target = Math.min(navRefs.current.length - 1, rightIdx); navRefs.current[target]?.focus(); }
+        else if(leftIdx >= 0){ /* already left side */ }
+        return;
+      }
+    }
+
+    window.addEventListener('keydown', handleKey);
+    return ()=> window.removeEventListener('keydown', handleKey);
+  }, [keyboardEnabled, navRefs, leftButtonRefs, btnRefs, visibleSettingsCount]);
+
   return (
     <Layout title={t('settings_title')} subtitle={t('settings_subtitle')} sticky>
       <div className={`${styles.wrap} ${activeInput === 'keyboard' ? 'no-mouse' : ''}`}>
         <div className={styles.stage}>
 
           <div className={styles.layout}>
-            <aside className={styles.left}>
+            <aside className={styles.left} ref={(el)=>{ leftColumnRef.current = el; }}>
               <ul className={styles.navList}>
                 {withLabels.map((sec, secIndex) => {
                   const items = SETTINGS.filter(s => sec.items.includes(s.id));
@@ -160,11 +230,17 @@ export default function Settings({onBack}:{onBack:()=>void}){
                         onKeyDown={(e)=>{
                           const k = e.key.toLowerCase();
                           if(k === 'enter' || k === ' '){ e.preventDefault(); setSection(sec.id); }
-                          if(k === 'arrowright'){
+                          if(k === 'arrowright' || k === 'd'){
                             e.preventDefault();
                             // focus first setting row
                             const first = btnRefs.current[0] as HTMLElement | null | undefined;
                             if(first) { try{ first.focus(); }catch{} }
+                          }
+                          if(k === 'arrowleft' || k === 'a'){
+                            e.preventDefault();
+                            // focus first left button (Apply)
+                            const lb = leftButtonRefs.current[0] as HTMLElement | null | undefined;
+                            if(lb) try{ lb.focus(); }catch{}
                           }
                           if(k === 'arrowup' || k === 'arrowdown'){
                             // move between nav items
@@ -186,9 +262,68 @@ export default function Settings({onBack}:{onBack:()=>void}){
                 })}
               </ul>
               <div className={styles.leftButtons}>
-                <Button variant="primary" onClick={handleApply}>{t('settings_apply')}</Button>
-                <Button variant="secondary" onClick={handleReset}>{t('settings_reset')}</Button>
-                <Button variant="secondary" onClick={onBack}>{t('settings_back')}</Button>
+                <Button
+                  variant="primary"
+                  onClick={handleApply}
+                  ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[0] = el; }}
+                    onKeyDown={(e)=>{
+                    const k = e.key.toLowerCase();
+                    if(k === 'arrowright' || k === 'd'){
+                      e.preventDefault();
+                      const first = btnRefs.current[0] as HTMLElement | null | undefined;
+                      if(first) try{ first.focus(); }catch{}
+                    }
+                    if(k === 'arrowdown' || k === 'arrowup'){
+                      e.preventDefault();
+                      const dir = k === 'arrowdown' ? 1 : -1;
+                      const next = (0 + dir + 3) % 3;
+                      const el = leftButtonRefs.current[next];
+                      if(el) try{ el.focus(); }catch{}
+                    }
+                  }}
+                >{t('settings_apply')}</Button>
+
+                <Button
+                  variant="secondary"
+                  onClick={handleReset}
+                  ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[1] = el; }}
+                    onKeyDown={(e)=>{
+                    const k = e.key.toLowerCase();
+                    if(k === 'arrowright' || k === 'd'){
+                      e.preventDefault();
+                      const first = btnRefs.current[0] as HTMLElement | null | undefined;
+                      if(first) try{ first.focus(); }catch{}
+                    }
+                    if(k === 'arrowdown' || k === 'arrowup'){
+                      e.preventDefault();
+                      const dir = k === 'arrowdown' ? 1 : -1;
+                      const next = (1 + dir + 3) % 3;
+                      const el = leftButtonRefs.current[next];
+                      if(el) try{ el.focus(); }catch{}
+                    }
+                  }}
+                >{t('settings_reset')}</Button>
+
+                <Button
+                  variant="secondary"
+                  onClick={onBack}
+                  ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[2] = el; }}
+                    onKeyDown={(e)=>{
+                    const k = e.key.toLowerCase();
+                    if(k === 'arrowright' || k === 'd'){
+                      e.preventDefault();
+                      const first = btnRefs.current[0] as HTMLElement | null | undefined;
+                      if(first) try{ first.focus(); }catch{}
+                    }
+                    if(k === 'arrowdown' || k === 'arrowup'){
+                      e.preventDefault();
+                      const dir = k === 'arrowdown' ? 1 : -1;
+                      const next = (2 + dir + 3) % 3;
+                      const el = leftButtonRefs.current[next];
+                      if(el) try{ el.focus(); }catch{}
+                    }
+                  }}
+                >{t('settings_back')}</Button>
               </div>
             </aside>
 
@@ -201,7 +336,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
               </select>
             </div>
 
-            <section className={styles.right}>
+            <section className={styles.right} ref={(el)=>{ rightColumnRef.current = el; }}>
               {visibleSettings.map((s, i) => (
                 <Card
                   key={s.id}
@@ -213,17 +348,15 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     tabIndex={0}
                     ref={(el) => { btnRefs.current[i] = el; }}
                     onMouseEnter={() => { if(mouseEnabled) onMouseEnter(i); }}
-                    onFocus={() => { setActiveInput && setActiveInput('keyboard'); }}
+                    onFocus={() => { setActiveInput && setActiveInput('keyboard'); setFocusIndex(i); }}
                     onKeyDown={(e)=>{
                       const k = e.key.toLowerCase();
-                      if(k === 'arrowleft'){
-                        // if we're at the first setting, jump back to nav; otherwise allow horizontal navigation handled by the hook
-                        if(focusIndex === 0){
-                          e.preventDefault();
-                          const idx = withLabels.findIndex(s => s.id === section);
-                          const navEl = navRefs.current[idx];
-                          if(navEl) try{ navEl.focus(); }catch{}
-                        }
+                      if(k === 'arrowleft' || k === 'a'){
+                        // jump back to the left nav (so users can then navigate to left action buttons)
+                        e.preventDefault();
+                        const idx = withLabels.findIndex(s => s.id === section);
+                        const navEl = navRefs.current[idx];
+                        if(navEl) try{ navEl.focus(); }catch{}
                       }
                     }}
                   >

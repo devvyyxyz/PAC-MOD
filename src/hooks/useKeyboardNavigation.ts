@@ -9,10 +9,11 @@ export function useKeyboardNavigation(opts: {
   enabled?: boolean;
   starting?: boolean;
   btnRefs?: MutableRefObject<Array<HTMLElement | null>>;
+  containerRef?: MutableRefObject<HTMLElement | null>;
   onActivate?: (index: number) => void;
   initialIndex?: number;
 }){
-  const { length, controlScheme = 'arrow', axis = 'vertical', enabled = true, starting = false, btnRefs, onActivate, initialIndex = 0 } = opts;
+  const { length, controlScheme = 'arrow', axis = 'vertical', enabled = true, starting = false, btnRefs, containerRef, onActivate, initialIndex = 0 } = opts;
   const [focusIndex, setFocusIndex] = useState<number>(initialIndex);
   const [activeInput, setActiveInput] = useState<'auto'|'mouse'|'keyboard'>('auto');
   const timeoutRef = useRef<number | null>(null);
@@ -38,6 +39,13 @@ export function useKeyboardNavigation(opts: {
   useEffect(()=>{
     function handleKey(e: KeyboardEvent){
       if(!enabled) return;
+      // if a containerRef is provided, only handle keys when the focused element is inside it
+      try{
+        if(containerRef && containerRef.current){
+          const active = document.activeElement as HTMLElement | null;
+          if(active && !containerRef.current.contains(active)) return;
+        }
+      }catch(e){}
       if(starting) return;
       if (!length || length <= 0) return;
       const k = e.key.toLowerCase();

@@ -23,6 +23,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
     enabled: keyboardEnabled,
     starting: false,
     btnRefs: btnRefs as any,
+    containerRef: stageRef as any,
     onActivate: (idx) => {
       const nodes = btnRefs.current || [];
       const el = nodes[idx] as HTMLElement | undefined | null;
