@@ -19,7 +19,10 @@ export const DEFAULT_CONFIG = {
     invertControls: false,
     showFPS: false,
     controlScheme: 'arrow',
-    colorBlindMode: 'none'
+    colorBlindMode: 'none',
+    keyboardNavigation: true,
+    mouseNavigation: true,
+    mouseSensitivity: 50
   },
   // leave empty here in source control; prefer using VITE_DISCORD_WEBHOOK_URL
   discordWebhook: '' as string,

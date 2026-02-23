@@ -21,6 +21,9 @@ const SETTINGS: SettingMeta[] = [
   { id: 'showFPS', labelKey: 'setting_showFPS', type: 'toggle', implemented: true, description: 'Show FPS counter in top corner' },
   { id: 'controlScheme', labelKey: 'setting_controlScheme', type: 'select', implemented: true, options: ['arrow','wasd'], description: 'Preferred control layout' },
   { id: 'colorBlindMode', labelKey: 'setting_colorBlindMode', type: 'select', implemented: true, options: ['none','protanopia','deuteranopia'], description: 'Color-blind accessibility mode' },
+  { id: 'keyboardNavigation', labelKey: 'setting_keyboardNavigation', type: 'toggle', implemented: true, description: 'Enable keyboard navigation in menus' },
+  { id: 'mouseNavigation', labelKey: 'setting_mouseNavigation', type: 'toggle', implemented: true, description: 'Enable mouse navigation in menus' },
+  { id: 'mouseSensitivity', labelKey: 'setting_mouseSensitivity', type: 'range', implemented: true, description: 'Mouse sensitivity for menu interactions' },
   { id: 'highContrast', label: 'High Contrast Mode', type: 'toggle', implemented: false, description: 'Experimental accessibility mode (coming soon)' },
   { id: 'onlineLeaderboard', label: 'Online Leaderboards', type: 'toggle', implemented: false, description: 'Upload scores to global leaderboard (not yet implemented)' }
   ,{ id: 'locale', labelKey: 'setting_language', type: 'select', implemented: true, options: ['en','es','pl'], description: 'UI Language' }

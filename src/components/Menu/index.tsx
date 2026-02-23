@@ -11,14 +11,20 @@ type Props = { onStart?: () => void, onOpenSettings?: ()=>void, onOpenCredits?: 
 
 export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: Props) {
   const [starting, setStarting] = React.useState(false);
+  const [keyboardEnabled, setKeyboardEnabled] = React.useState(true);
+  const [mouseEnabled, setMouseEnabled] = React.useState(true);
+  const [focusIndex, setFocusIndex] = React.useState(0);
   const { t } = useI18n();
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const btnRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
 
   React.useEffect(()=>{
     try{
       const cfg = config.loadConfig();
       const enabled = cfg.settings?.music !== false;
       const vol = (typeof cfg.settings?.volume === 'number') ? (cfg.settings.volume / 100) : 0.7;
+      setKeyboardEnabled(cfg.settings?.keyboardNavigation !== false);
+      setMouseEnabled(cfg.settings?.mouseNavigation !== false);
       const audioEntry = AUDIO.menuAmbience;
       const src = encodeURI(audioEntry?.src || '/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav');
       const a = new Audio(src);
@@ -37,6 +43,8 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
         const detail = (e as CustomEvent).detail as any;
         const enabled = detail?.settings?.music !== false;
         const vol = (typeof detail?.settings?.volume === 'number') ? (detail.settings.volume / 100) : 0.7;
+        setKeyboardEnabled(detail?.settings?.keyboardNavigation !== false);
+        setMouseEnabled(detail?.settings?.mouseNavigation !== false);
         if(!audioRef.current){
           const a = new Audio(encodeURI('/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav'));
           a.loop = true;
@@ -54,6 +62,41 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
       try{ window.removeEventListener('pacman.config.changed', handleCfgChange as EventListener); if(audioRef.current){ audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null; } }catch(e){}
     };
   },[]);
+
+  React.useEffect(()=>{
+    // ensure the focused button receives DOM focus when focusIndex changes
+    const el = btnRefs.current[focusIndex];
+    if(el) el.focus();
+  },[focusIndex]);
+
+  React.useEffect(()=>{
+    function handleKey(e: KeyboardEvent){
+      if(!keyboardEnabled) return;
+      if(starting) return;
+      const len = 3;
+      if(e.key === 'ArrowUp'){
+        e.preventDefault();
+        setFocusIndex((i)=> (i - 1 + len) % len);
+      } else if(e.key === 'ArrowDown'){
+        e.preventDefault();
+        setFocusIndex((i)=> (i + 1) % len);
+      } else if(e.key === 'Home'){
+        e.preventDefault();
+        setFocusIndex(0);
+      } else if(e.key === 'End'){
+        e.preventDefault();
+        setFocusIndex(len - 1);
+      } else if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        // activate current
+        if(focusIndex === 0) handleStart();
+        if(focusIndex === 1) handleSettings();
+        if(focusIndex === 2) handleCredits();
+      }
+    }
+    window.addEventListener('keydown', handleKey);
+    return ()=> window.removeEventListener('keydown', handleKey);
+  },[keyboardEnabled, starting, focusIndex]);
 
   function handleStart() {
     if (starting) return;
