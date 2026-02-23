@@ -20,20 +20,6 @@ const CREDITS: Credit[] = [
     role: 'Audio / SFX',
     url: 'https://kronbits.itch.io/freesfx',
     note: 'Free SFX pack used for game sounds'
-  },
-  {
-    id: 'Example',
-    name: 'Example Contributor',
-    role: 'Example Role',
-    url: 'https://example.com',
-    note: 'Example note for contributor'
-  },
-  {
-    id: 'Example2',
-    name: 'Example Contributor',
-    role: 'Example Role',
-    url: 'https://example.com',
-    note: 'Example note for contributor'
   }
 ];
 
