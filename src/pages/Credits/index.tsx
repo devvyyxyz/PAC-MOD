@@ -12,6 +12,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
   const { t } = useI18n();
   const stageRef = React.useRef<HTMLDivElement | null>(null);
   const [keyboardEnabled, setKeyboardEnabled] = React.useState(true);
+  const [mouseEnabled, setMouseEnabled] = React.useState(true);
   const [controlScheme, setControlScheme] = React.useState<'arrow'|'wasd'>('arrow');
   const btnRefs = React.useRef<Array<HTMLElement | null>>([]);
   const [focusableCount, setFocusableCount] = React.useState(0);
@@ -32,6 +33,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
     try{
       const cfg = config.loadConfig();
       setKeyboardEnabled(cfg.settings?.keyboardNavigation !== false);
+      setMouseEnabled(cfg.settings?.mouseNavigation !== false);
       setControlScheme((cfg.settings?.controlScheme as 'arrow'|'wasd') || 'arrow');
     }catch(e){}
 
@@ -40,6 +42,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const detail = (e as CustomEvent).detail as any;
         setKeyboardEnabled(detail?.settings?.keyboardNavigation !== false);
+        setMouseEnabled(detail?.settings?.mouseNavigation !== false);
         setControlScheme((detail?.settings?.controlScheme as 'arrow'|'wasd') || 'arrow');
       }catch(_){}
     }
@@ -78,7 +81,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
         <Title title={t('credits_title')} subtitle={t('credits_subtitle')} sticky className={`${menuStyles.title} ${styles.stickyTitle}`} />
 
         <Grid className={styles.cards} columns={{sm:1,md:2,lg:3}} gap={16}>
-          {CREDITS.map(c => {
+            {CREDITS.map((c, idx) => {
             const CardInner = (
               <div className={styles.card}>
                 <div>
@@ -99,13 +102,17 @@ export default function Credits({onBack}:{onBack:()=>void}){
 
             if(c.url){
               return (
-                <a key={c.id} className={styles.cardLinkWrap} href={c.url} target="_blank" rel="noopener noreferrer">
+                <a key={c.id} className={styles.cardLinkWrap} href={c.url} target="_blank" rel="noopener noreferrer" onMouseEnter={()=>{ if(mouseEnabled) onMouseEnter(idx); }}>
                   {CardInner}
                 </a>
               );
             }
 
-            return <div key={c.id}>{CardInner}</div>;
+            return (
+              <div key={c.id} className={styles.cardLinkWrap} tabIndex={0} onMouseEnter={()=>{ if(mouseEnabled) onMouseEnter(idx); }}>
+                {CardInner}
+              </div>
+            );
           })}
         </Grid>
 

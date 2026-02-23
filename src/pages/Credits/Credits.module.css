@@ -12,6 +12,16 @@
 .cardLinkWrap{display:block;text-decoration:none;color:inherit}
 .cardLinkWrap .card{height:200px}
 .cardLinkWrap:hover .card{transform:translateY(-6px) scale(1.02);box-shadow:0 20px 60px rgba(255,176,56,0.08)}
+
+/* keyboard focus / programmatic focus should match hover visuals */
+.cardLinkWrap:focus .card,
+.cardLinkWrap[data-focused="true"] .card,
+.cardLinkWrap:focus-within .card{
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(255,176,56,0.08);
+  outline: 3px solid var(--accent);
+  outline-offset: 6px;
+}
 .cardFooter{display:flex;justify-content:flex-end;align-items:center;gap:6px}
 
 .stickyTitle{position:sticky;top:20px;z-index:30;padding:6px 0;background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);border-radius:8px}
