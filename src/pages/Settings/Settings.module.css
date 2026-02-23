@@ -42,10 +42,16 @@
 .mobileLabel{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
 .mobileSelectControl{width:100%;padding:8px 10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
 
+/* left sidebar buttons */
+.leftButtons{display:flex;flex-direction:column;gap:8px;padding:8px;margin-top:12px}
+.leftButtons .button{width:100%}
+.mobileActions{display:none;margin-top:12px;display:flex;gap:8px}
+
 @media (max-width:800px){
   .grid{grid-template-columns:1fr}
   .layout{flex-direction:column}
   .left{width:100%;flex:unset}
   .mobileSelect{display:block}
   .left{display:none}
+  .mobileActions{display:flex}
 }

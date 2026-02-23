@@ -115,6 +115,11 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   );
                 })}
               </ul>
+              <div className={styles.leftButtons}>
+                <Button variant="primary" onClick={handleApply}>{t('settings_apply')}</Button>
+                <Button variant="secondary" onClick={handleReset}>{t('settings_reset')}</Button>
+                <Button variant="secondary" onClick={onBack}>{t('settings_back')}</Button>
+              </div>
             </aside>
 
             <div className={styles.mobileSelect}>
@@ -139,12 +144,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
             </section>
           </div>
 
-          <div style={{marginTop:16,display:'flex',gap:8,justifyContent:'center',alignItems:'center'}}>
-            <Button variant="primary" onClick={handleApply}>{t('settings_apply')}</Button>
-            <Button variant="secondary" onClick={handleReset}>{t('settings_reset')}</Button>
-            <Button variant="secondary" onClick={onBack}>{t('settings_back')}</Button>
-            
-          </div>
+          
         </div>
       </div>
     </Layout>
