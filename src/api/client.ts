@@ -1,3 +1,12 @@
+// Extend ImportMeta to include 'env' for Vite
+interface ImportMetaEnv {
+  readonly VITE_API_BASE?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 type RequestOpts = {

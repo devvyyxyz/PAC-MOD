@@ -14,7 +14,7 @@ export default function ErrorPage({error, info, onBack}:{error:Error, info?:Reac
 
   async function handleSend(){
     setSending(true);
-    const res = await sendCrashReport({title: error.message, message: String(error), stack: info?.componentStack});
+    const res = await sendCrashReport({title: error.message, message: String(error), stack: info?.componentStack ?? undefined});
     setSending(false);
     if(res.ok){
       setResult('sent');

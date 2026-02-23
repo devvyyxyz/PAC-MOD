@@ -35,10 +35,16 @@ export function getDiscordWebhook(): string | null {
   // prefer Vite-provided env var
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const env = (import.meta as any).env as Record<string,string|undefined>;
-  if(env && env.VITE_DISCORD_WEBHOOK_URL) return String(env.VITE_DISCORD_WEBHOOK_URL);
+  if(env && env.VITE_DISCORD_WEBHOOK_URL) {
+    const v = String(env.VITE_DISCORD_WEBHOOK_URL).trim();
+    if(v) return v;
+  }
   // fallback to stored config value
   const cfg = loadConfig();
-  return cfg.discordWebhook || null;
+  if(cfg && cfg.discordWebhook) return String(cfg.discordWebhook);
+  // finally fall back to the hard-coded default in source
+  if(DEFAULT_CONFIG && DEFAULT_CONFIG.discordWebhook) return String(DEFAULT_CONFIG.discordWebhook);
+  return null;
 }
 
 export default { loadConfig, saveConfig, getDiscordWebhook };
