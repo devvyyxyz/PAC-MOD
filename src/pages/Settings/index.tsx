@@ -82,14 +82,27 @@ export default function Settings({onBack}:{onBack:()=>void}){
   }
 
   const SECTIONS: { id: string; label: string; items: string[] }[] = [
-    { id: 'all', label: t('settings_section_all') || 'All', items: SETTINGS.map(s=>s.id) },
-    { id: 'audio', label: t('settings_section_audio') || 'Audio', items: ['sound','music','volume'] },
-    { id: 'controls', label: t('settings_section_controls') || 'Controls', items: ['invertControls','controlScheme','maxLives'] },
-    { id: 'gameplay', label: t('settings_section_gameplay') || 'Gameplay', items: ['difficulty','skin','showFPS'] },
-    { id: 'accessibility', label: t('settings_section_accessibility') || 'Accessibility', items: ['colorBlindMode','highContrast'] }
+    { id: 'all', label: '', items: SETTINGS.map(s=>s.id) },
+    { id: 'audio', label: '', items: ['sound','music','volume'] },
+    { id: 'controls', label: '', items: ['invertControls','controlScheme','maxLives'] },
+    { id: 'gameplay', label: '', items: ['difficulty','skin','showFPS'] },
+    { id: 'accessibility', label: '', items: ['colorBlindMode','highContrast'] }
   ];
 
-  const activeSection = SECTIONS.find(s=>s.id===section) || SECTIONS[0];
+  function localLabel(key: string, fallback: string){
+    const val = t(key);
+    return (!val || val === key) ? fallback : val;
+  }
+
+  const withLabels = SECTIONS.map(s => ({ ...s, label: (
+    s.id === 'all' ? localLabel('settings_section_all','All') :
+    s.id === 'audio' ? localLabel('settings_section_audio','Audio') :
+    s.id === 'controls' ? localLabel('settings_section_controls','Controls') :
+    s.id === 'gameplay' ? localLabel('settings_section_gameplay','Gameplay') :
+    s.id === 'accessibility' ? localLabel('settings_section_accessibility','Accessibility') : s.id
+  )}));
+
+  const activeSection = withLabels.find(s=>s.id===section) || withLabels[0];
   const visibleSettings = SETTINGS.filter(s=> activeSection.items.includes(s.id));
 
   return (
@@ -100,7 +113,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
           <div className={styles.layout}>
             <aside className={styles.left}>
               <ul className={styles.navList}>
-                {SECTIONS.map(sec => {
+                {withLabels.map(sec => {
                   const items = SETTINGS.filter(s => sec.items.includes(s.id));
                   const count = items.length;
                   const disabled = items.filter(s => s.implemented === false).length;
@@ -125,7 +138,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
             <div className={styles.mobileSelect}>
               <label className={styles.mobileLabel} htmlFor="settings-section-select">{t('settings_section')}</label>
               <select id="settings-section-select" className={styles.mobileSelectControl} value={section} onChange={(e)=>setSection(e.target.value)}>
-                {SECTIONS.map(sec => (
+                {withLabels.map(sec => (
                   <option key={sec.id} value={sec.id}>{sec.label} ({SETTINGS.filter(s=>sec.items.includes(s.id)).length})</option>
                 ))}
               </select>
