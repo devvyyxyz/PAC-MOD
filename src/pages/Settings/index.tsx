@@ -159,11 +159,20 @@ export default function Settings({onBack}:{onBack:()=>void}){
         const detail = (e as CustomEvent).detail as any;
         setSavedKeyboardEnabled(detail?.settings?.keyboardNavigation !== false);
         setSavedMouseEnabled(detail?.settings?.mouseNavigation !== false);
+        setSavedSettings(detail?.settings || {});
       }catch(e){}
     }
     window.addEventListener('pacman.config.changed', onCfg as EventListener);
     return ()=> window.removeEventListener('pacman.config.changed', onCfg as EventListener);
   },[]);
+
+  const [savedSettings, setSavedSettings] = React.useState<Record<string, any>>(() => {
+    try{ return config.loadConfig().settings || {}; }catch(e){ return {}; }
+  });
+
+  const isDirty = React.useMemo(()=>{
+    try{ return JSON.stringify(local || {}) !== JSON.stringify(savedSettings || {}); }catch(e){ return false; }
+  },[local, savedSettings]);
 
   // Global keyboard handler to switch focus between left column (nav + left buttons)
   // and right column (settings rows) using arrow keys or WASD.
@@ -358,6 +367,16 @@ export default function Settings({onBack}:{onBack:()=>void}){
             </div>
 
             <section className={styles.right} ref={(el)=>{ rightColumnRef.current = el; }}>
+              {isDirty ? (
+                <div className={styles.unsavedBanner}>
+                  <div>{t('settings_unsaved_changes') || 'You have unsaved changes'}</div>
+                  <div style={{display:'flex',gap:8}}>
+                    <Button variant="primary" onClick={handleApply}>{t('settings_apply')}</Button>
+                    <Button variant="secondary" onClick={handleReset}>{t('settings_reset')}</Button>
+                  </div>
+                </div>
+              ) : null}
+
               {visibleSettings.map((s, i) => (
                 <Card
                   key={s.id}
