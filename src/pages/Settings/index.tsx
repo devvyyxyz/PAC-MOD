@@ -19,6 +19,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const { t, setLocale } = useI18n();
   const [section, setSection] = useState<string>('all');
   const btnRefs = React.useRef<Array<HTMLDivElement | null>>([]);
+  const navRefs = React.useRef<Array<HTMLLIElement | null>>([]);
 
   useEffect(()=>{
     const cfg = config.loadConfig();
@@ -119,11 +120,20 @@ export default function Settings({onBack}:{onBack:()=>void}){
     starting: false,
     btnRefs: btnRefs as any,
     onActivate: (idx) => {
-      // focus the control inside the setting row
+      // focus or activate the control inside the setting row
       const root = btnRefs.current[idx];
       if(!root) return;
       const ctrl = root.querySelector('input, select, button, [tabindex]:not([tabindex="-1"])') as HTMLElement | null;
-      if(ctrl) try{ ctrl.focus(); }catch(e){}
+      if(!ctrl) return;
+      try{
+        // toggle checkboxes directly
+        if(ctrl.tagName === 'INPUT' && (ctrl as HTMLInputElement).type === 'checkbox'){
+          (ctrl as HTMLInputElement).click();
+          return;
+        }
+        // otherwise focus the control so native keys work (space, arrows)
+        ctrl.focus();
+      }catch(e){}
     }
   });
 
@@ -135,19 +145,43 @@ export default function Settings({onBack}:{onBack:()=>void}){
           <div className={styles.layout}>
             <aside className={styles.left}>
               <ul className={styles.navList}>
-                {withLabels.map(sec => {
+                {withLabels.map((sec, secIndex) => {
                   const items = SETTINGS.filter(s => sec.items.includes(s.id));
                   const count = items.length;
                   const disabled = items.filter(s => s.implemented === false).length;
-                  return (
-                    <li key={sec.id} className={`${styles.navItem} ${section===sec.id?styles.active:''}`} onClick={()=>setSection(sec.id)}>
-                      <span className={styles.navLabel}>{sec.label}</span>
-                      <span className={styles.navMeta}>
-                        <span className={styles.badge}>{count}</span>
-                        {disabled ? <small className={styles.badgeMuted}>{disabled} off</small> : null}
-                      </span>
-                    </li>
-                  );
+                    return (
+                      <li
+                        key={sec.id}
+                        className={`${styles.navItem} ${section===sec.id?styles.active:''}`}
+                        onClick={()=>setSection(sec.id)}
+                        tabIndex={0}
+                        ref={(el)=>{ navRefs.current[secIndex] = el; }}
+                        onKeyDown={(e)=>{
+                          const k = e.key.toLowerCase();
+                          if(k === 'enter' || k === ' '){ e.preventDefault(); setSection(sec.id); }
+                          if(k === 'arrowright'){
+                            e.preventDefault();
+                            // focus first setting row
+                            const first = btnRefs.current[0] as HTMLElement | null | undefined;
+                            if(first) { try{ first.focus(); }catch{} }
+                          }
+                          if(k === 'arrowup' || k === 'arrowdown'){
+                            // move between nav items
+                            e.preventDefault();
+                            const dir = k === 'arrowup' ? -1 : 1;
+                            const next = (secIndex + dir + withLabels.length) % withLabels.length;
+                            const el = navRefs.current[next];
+                            if(el) try{ el.focus(); }catch{}
+                          }
+                        }}
+                      >
+                        <span className={styles.navLabel}>{sec.label}</span>
+                        <span className={styles.navMeta}>
+                          <span className={styles.badge}>{count}</span>
+                          {disabled ? <small className={styles.badgeMuted}>{disabled} off</small> : null}
+                        </span>
+                      </li>
+                    );
                 })}
               </ul>
               <div className={styles.leftButtons}>
@@ -179,6 +213,16 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     ref={(el) => { btnRefs.current[i] = el; }}
                     onMouseEnter={() => { if(mouseEnabled) onMouseEnter(i); }}
                     onFocus={() => { setActiveInput && setActiveInput('keyboard'); }}
+                    onKeyDown={(e)=>{
+                      const k = e.key.toLowerCase();
+                      if(k === 'arrowleft'){
+                        e.preventDefault();
+                        // focus the active nav item
+                        const idx = withLabels.findIndex(s => s.id === section);
+                        const navEl = navRefs.current[idx];
+                        if(navEl) try{ navEl.focus(); }catch{}
+                      }
+                    }}
                   >
                     <div className={styles.settingInfo}>
                       <div className={styles.cardLabel}>{t(s.labelKey || s.label || s.id)}</div>
