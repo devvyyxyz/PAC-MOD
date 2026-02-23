@@ -18,7 +18,7 @@ export const DEFAULT_CONFIG = {
     locale: 'en',
     invertControls: false,
     showFPS: false,
-    controlScheme: 'arrow',
+    controlScheme: 'wasd',
     colorBlindMode: 'none',
     highContrast: false,
     onlineLeaderboard: false,
