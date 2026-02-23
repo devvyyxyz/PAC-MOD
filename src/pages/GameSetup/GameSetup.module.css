@@ -1,0 +1,13 @@
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:transparent}
+.card{width:min(860px,92vw);padding:28px;border-radius:14px;background:rgba(255,255,255,0.01);box-shadow:0 16px 50px rgba(0,0,0,0.6);display:flex;gap:24px;align-items:flex-start}
+.left{flex:1}
+.right{width:320px}
+.title{font-size:28px;margin:0 0 12px 0;color:var(--accent)}
+.label{color:var(--muted);font-size:13px;margin-bottom:8px}
+.skins{display:flex;gap:10px}
+.skin{width:56px;height:56px;border-radius:8px;cursor:pointer;border:2px solid transparent;box-shadow:inset 0 -6px 10px rgba(0,0,0,0.35)}
+.skin.selected{outline:3px solid rgba(255,216,80,0.08)}
+.controls{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:12px;align-items:center}
+.playBtn{margin-top:10px}
+.small{font-size:13px;color:var(--muted)}

@@ -1,0 +1,19 @@
+/* Global reset and background to remove browser margins and set black UI */
+html,body,#root{
+  height:100%;
+  margin:0;
+  padding:0;
+  background:#000000;
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* Ensure full-bleed background so there is no visible page border */
+body{
+  background-color:#000;
+}
+
+/* Game enter animation for the game screen */
+.game-enter{animation:fadeInFromBlack .6s ease forwards}
+@keyframes fadeInFromBlack{0%{opacity:0;transform:scale(.995)}100%{opacity:1;transform:scale(1)}}

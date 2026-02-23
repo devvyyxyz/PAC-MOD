@@ -1,0 +1,32 @@
+:root{--card-bg:rgba(255,255,255,0.02);}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:12px auto 0;width:100%;max-width:760px;justify-items:center}
+.card{background:var(--card-bg);padding:14px;border-radius:12px;height:200px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,0.45);transition:transform .18s ease,box-shadow .18s ease}
+.cardHeader{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.cardIcon{width:44px;height:44px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);} 
+.cardTitle{font-size:16px;font-weight:700;color:var(--accent);margin:0;text-align:center}
+.cardRole{font-size:13px;color:var(--muted);margin:0;text-align:center}
+.cardNote{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+.cardLink{margin-top:12px;font-size:13px;color:var(--accent);opacity:0.95}
+
+/* make anchor-wrapped cards fill and be clickable */
+.cardLinkWrap{display:block;text-decoration:none;color:inherit}
+.cardLinkWrap .card{height:200px}
+.cardLinkWrap:hover .card{transform:translateY(-6px) scale(1.02);box-shadow:0 20px 60px rgba(255,176,56,0.08)}
+.cardFooter{display:flex;justify-content:flex-end;align-items:center;gap:6px}
+
+.stickyTitle{position:sticky;top:20px;z-index:30;padding:6px 0;background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);border-radius:8px}
+
+/* allow sticky children inside the shared menu wrap (which sets overflow:hidden) */
+.pageWrap{overflow:visible}
+
+/* subtle blurred glow behind the title text */
+.stickyTitle .name{position:relative;z-index:36;text-shadow:0 10px 20px rgba(0,0,0,0.6), 0 0 18px rgba(0,0,0,0.25)}
+.stickyTitle .subtitle{position:relative;z-index:36}
+
+
+@media (max-width: 960px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width: 560px){
+  .cards{grid-template-columns:1fr}
+}
