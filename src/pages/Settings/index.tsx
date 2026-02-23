@@ -148,13 +148,17 @@ export default function Settings({onBack}:{onBack:()=>void}){
               {visibleSettings.map(s => (
                 <Card
                   key={s.id}
-                  title={t(s.labelKey || s.label || s.id)}
                   className={`${s.implemented===false?styles.disabled:''} ${s.id==='difficulty' || s.id==='skin'?styles.full:''}`}
                   overlayLabel={s.implemented === false ? t('coming_soon') : null}
                 >
-                  <div className={styles.cardDesc}>{s.description}</div>
-                  <div>
-                    {renderControl(s)}
+                  <div className={styles.settingRow}>
+                    <div className={styles.settingInfo}>
+                      <div className={styles.cardLabel}>{t(s.labelKey || s.label || s.id)}</div>
+                      <div className={styles.cardDesc}>{s.description}</div>
+                    </div>
+                    <div className={styles.settingControl}>
+                      {renderControl(s)}
+                    </div>
                   </div>
                 </Card>
               ))}
