@@ -33,7 +33,6 @@ export function useKeyboardNavigation(opts: {
     function handleKey(e: KeyboardEvent){
       if(!enabled) return;
       if(starting) return;
-      if(activeInput === 'mouse') return;
       if (!length || length <= 0) return;
       const k = e.key.toLowerCase();
       const isUp = (controlScheme === 'wasd') ? (k === 'w') : (k === 'arrowup');
@@ -50,7 +49,6 @@ export function useKeyboardNavigation(opts: {
 
   function onMouseEnter(idx: number){
     if(!enabled) return;
-    if(activeInput === 'keyboard') return;
     setActiveInput('mouse');
     setFocusIndex(idx);
   }
