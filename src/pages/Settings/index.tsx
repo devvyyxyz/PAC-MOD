@@ -100,11 +100,31 @@ export default function Settings({onBack}:{onBack:()=>void}){
           <div className={styles.layout}>
             <aside className={styles.left}>
               <ul className={styles.navList}>
-                {SECTIONS.map(sec => (
-                  <li key={sec.id} className={`${styles.navItem} ${section===sec.id?styles.active:''}`} onClick={()=>setSection(sec.id)}>{sec.label}</li>
-                ))}
+                {SECTIONS.map(sec => {
+                  const items = SETTINGS.filter(s => sec.items.includes(s.id));
+                  const count = items.length;
+                  const disabled = items.filter(s => s.implemented === false).length;
+                  return (
+                    <li key={sec.id} className={`${styles.navItem} ${section===sec.id?styles.active:''}`} onClick={()=>setSection(sec.id)}>
+                      <span className={styles.navLabel}>{sec.label}</span>
+                      <span className={styles.navMeta}>
+                        <span className={styles.badge}>{count}</span>
+                        {disabled ? <small className={styles.badgeMuted}>{disabled} off</small> : null}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </aside>
+
+            <div className={styles.mobileSelect}>
+              <label className={styles.mobileLabel} htmlFor="settings-section-select">{t('settings_section')}</label>
+              <select id="settings-section-select" className={styles.mobileSelectControl} value={section} onChange={(e)=>setSection(e.target.value)}>
+                {SECTIONS.map(sec => (
+                  <option key={sec.id} value={sec.id}>{sec.label} ({SETTINGS.filter(s=>sec.items.includes(s.id)).length})</option>
+                ))}
+              </select>
+            </div>
 
             <section className={styles.right}>
               {visibleSettings.map(s => (
