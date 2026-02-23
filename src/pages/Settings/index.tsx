@@ -4,7 +4,7 @@ import Button from '../../components/Button';
 import styles from './Settings.module.css';
 import SETTINGS, { SettingMeta } from '../../config/settings';
 import config from '../../config';
-import { useI18n, Layout, Grid } from '../../components';
+import { useI18n, Layout, Grid, useToast } from '../../components';
 import { Toggle, Select, Range, NumberInput } from '../../components/Controls';
 import Card from '../../components/Card/Card';
 import { DEFAULT_CONFIG } from '../../config/defaults';
@@ -13,7 +13,7 @@ type LocalSettings = Record<string, any>;
 
 export default function Settings({onBack}:{onBack:()=>void}){
   const [local, setLocal] = useState<LocalSettings>({});
-  const [applied, setApplied] = useState(false);
+  const toast = useToast();
   const [savedKey, setSavedKey] = useState<string | null>(null);
   const { t, setLocale } = useI18n();
 
@@ -38,8 +38,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   function handleApply(){
     config.saveConfig({settings: local as any});
     if(local.locale) setLocale(local.locale);
-    setApplied(true);
-    setTimeout(()=>setApplied(false), 2000);
+    toast.show({ message: t('settings_applied'), type: 'success', duration: 2000 });
   }
 
   function renderControl(s: SettingMeta){
@@ -102,7 +101,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
             <Button variant="primary" onClick={handleApply}>{t('settings_apply')}</Button>
             <Button variant="secondary" onClick={handleReset}>{t('settings_reset')}</Button>
             <Button variant="secondary" onClick={onBack}>{t('settings_back')}</Button>
-            {applied && <div style={{marginLeft:8,color:'var(--accent)',fontWeight:600}}>{t('settings_applied')}</div>}
+            
           </div>
         </div>
       </div>
