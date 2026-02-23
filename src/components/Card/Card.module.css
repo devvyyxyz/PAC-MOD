@@ -4,6 +4,7 @@
   padding: 16px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   border: 1px solid rgba(0,0,0,0.04);
+  position: relative;
 }
 .header {
   font-weight: 700;
@@ -11,4 +12,24 @@
   font-size: 1rem;
 }
 .body {
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  border-radius: 12px;
+  pointer-events: auto;
+  z-index: 30;
+}
+.overlayInner{
+  color: var(--accent);
+  background: rgba(0,0,0,0.3);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
