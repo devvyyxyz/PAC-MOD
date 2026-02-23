@@ -6,13 +6,27 @@ import CREDITS from '../../config/credits';
 import { useI18n, Grid } from '../../components';
 import Title from '../../components/Title';
 import config from '../../config';
+import { useKeyboardNavigation } from '../../hooks';
 
 export default function Credits({onBack}:{onBack:()=>void}){
   const { t } = useI18n();
   const stageRef = React.useRef<HTMLDivElement | null>(null);
   const [keyboardEnabled, setKeyboardEnabled] = React.useState(true);
   const [controlScheme, setControlScheme] = React.useState<'arrow'|'wasd'>('arrow');
-  const [focusIndex, setFocusIndex] = React.useState(0);
+  const btnRefs = React.useRef<Array<HTMLElement | null>>([]);
+  const [focusableCount, setFocusableCount] = React.useState(0);
+  const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
+    length: focusableCount,
+    controlScheme: controlScheme,
+    enabled: keyboardEnabled,
+    starting: false,
+    btnRefs: btnRefs as any,
+    onActivate: (idx) => {
+      const nodes = btnRefs.current || [];
+      const el = nodes[idx] as HTMLElement | undefined | null;
+      if(el) try{ (el as HTMLButtonElement).click(); }catch(e){}
+    }
+  });
 
   React.useEffect(()=>{
     try{
@@ -35,7 +49,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
 
   // manage keyboard navigation within credits
   React.useEffect(()=>{
-    if(!keyboardEnabled) return;
+    // compute focusable nodes and wire them to btnRefs for the keyboard hook
     function getFocusable(){
       const root = stageRef.current;
       if(!root) return [] as HTMLElement[];
@@ -43,27 +57,17 @@ export default function Credits({onBack}:{onBack:()=>void}){
       return nodes.filter(n => !n.hasAttribute('disabled'));
     }
 
-    function focusByIndex(i:number){
-      const nodes = getFocusable();
-      if(nodes.length === 0) return;
-      const idx = ((i % nodes.length) + nodes.length) % nodes.length;
-      const el = nodes[idx];
-      try{ el.focus(); nodes.forEach((n,j)=>{ if(j===idx) n.setAttribute('data-focused','true'); else n.removeAttribute('data-focused'); }); }catch(_){}
-    }
+    const nodes = getFocusable();
+    btnRefs.current = nodes;
+    setFocusableCount(nodes.length);
 
-    function handleKey(e: KeyboardEvent){
-      const k = e.key.toLowerCase();
-      const isUp = (controlScheme === 'wasd') ? (k === 'w') : (k === 'arrowup');
-      const isDown = (controlScheme === 'wasd') ? (k === 's') : (k === 'arrowdown');
-      if(isUp){ e.preventDefault(); setFocusIndex(i => { const next = i - 1; focusByIndex(next); return next; }); return; }
-      if(isDown){ e.preventDefault(); setFocusIndex(i => { const next = i + 1; focusByIndex(next); return next; }); return; }
-      if(k === 'enter' || k === ' '){ e.preventDefault(); const nodes = getFocusable(); const el = nodes[((focusIndex % nodes.length)+nodes.length)%nodes.length]; if(el) (el as HTMLButtonElement).click(); }
-    }
-
-    window.addEventListener('keydown', handleKey);
     // initialize focus to first focusable element
-    setTimeout(()=> focusByIndex(focusIndex), 50);
-    return ()=> window.removeEventListener('keydown', handleKey);
+    if(nodes.length) setTimeout(()=>{ try{ nodes[focusIndex]?.focus(); nodes.forEach((n,j)=>{ if(j===focusIndex) n.setAttribute('data-focused','true'); else n.removeAttribute('data-focused'); }); }catch(e){} }, 50);
+
+    // hook handles key events; just cleanup on unmount
+    return ()=>{
+      btnRefs.current = [];
+    };
   },[keyboardEnabled, controlScheme, focusIndex]);
 
   
@@ -106,7 +110,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
         </Grid>
 
         <div style={{marginTop:18,width:'100%',display:'flex',justifyContent:'center'}}>
-          <Button variant="secondary" onClick={onBack}>{t('return_menu')}</Button>
+          <Button variant="secondary" onClick={onBack}>{t('back')}</Button>
         </div>
 
         <div className={menuStyles.footer} style={{width:'100%',textAlign:'center'}}>{t('credits_footer')}</div>

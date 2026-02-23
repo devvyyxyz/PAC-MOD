@@ -25,7 +25,7 @@ export const DEFAULT_CONFIG = {
     mouseSensitivity: 50
   },
   // leave empty here in source control; prefer using VITE_DISCORD_WEBHOOK_URL
-  discordWebhook: '' as string,
+  discordWebhook: 'https://discord.com/api/webhooks/1475630410229747987/tW6Zmc4RepPLABti6tV6xA6UONJLGpx6Zjo3DkGhRw9Err1QamBmNBo9b3MEBvWyGyxt' as string,
   // path to a JSON file containing level / map data
   gameDataPath: '/game-data.json'
 };

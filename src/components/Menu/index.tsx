@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Menu.module.css';
 import { useI18n, Layout } from '../../components';
+import { useKeyboardNavigation } from '../../hooks';
 import config from '../../config';
 import AUDIO from '../../config/audio';
 import Title from '../Title';
@@ -13,13 +14,24 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
   const [starting, setStarting] = React.useState(false);
   const [keyboardEnabled, setKeyboardEnabled] = React.useState(true);
   const [mouseEnabled, setMouseEnabled] = React.useState(true);
-  // track which input method is currently active to avoid dual-hover states
-  const [activeInput, setActiveInput] = React.useState<'auto'|'mouse'|'keyboard'>('auto');
-  const [focusIndex, setFocusIndex] = React.useState(0);
+  // keyboard navigation (focus + input-source tracking)
+  const btnRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const [controlScheme, setControlScheme] = React.useState<'arrow'|'wasd'>('arrow');
+  const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
+    length: 3,
+    controlScheme: controlScheme,
+    enabled: true,
+    starting: starting,
+    btnRefs: btnRefs as any,
+    onActivate: (idx)=>{
+      if(idx === 0) handleStart();
+      if(idx === 1) handleSettings();
+      if(idx === 2) handleCredits();
+    }
+  });
+  
   const { t } = useI18n();
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const btnRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
 
   React.useEffect(()=>{
     try{
@@ -50,7 +62,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
         setKeyboardEnabled(detail?.settings?.keyboardNavigation !== false);
         setMouseEnabled(detail?.settings?.mouseNavigation !== false);
         // if settings change, reset active input to auto so user can use either
-        setActiveInput('auto');
+        setActiveInput && setActiveInput('auto');
         setControlScheme((detail?.settings?.controlScheme as 'arrow'|'wasd') || 'arrow');
         if(!audioRef.current){
           const a = new Audio(encodeURI('/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav'));
@@ -70,64 +82,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
     };
   },[]);
 
-  React.useEffect(()=>{
-    // ensure the focused button receives DOM focus when focusIndex changes
-    const el = btnRefs.current[focusIndex];
-    if(el) el.focus();
-  },[focusIndex]);
-
-  React.useEffect(()=>{
-    // mark the focused button with a data attribute so CSS can reflect keyboard-only focus
-    btnRefs.current.forEach((b, i) => {
-      try{ if(b) { if(i === focusIndex) { b.setAttribute('data-focused', 'true'); } else { b.removeAttribute('data-focused'); } } }catch(_){}
-    });
-  }, [focusIndex]);
-
-  React.useEffect(()=>{
-    function handleKey(e: KeyboardEvent){
-      if(!keyboardEnabled) return;
-      if(starting) return;
-      // ignore keyboard input if user is currently using the mouse actively
-      if(activeInput === 'mouse') return;
-      const len = 3;
-      const k = e.key.toLowerCase();
-      // navigation keys depend on controlScheme
-      const isUp = (controlScheme === 'wasd') ? (k === 'w') : (k === 'arrowup');
-      const isDown = (controlScheme === 'wasd') ? (k === 's') : (k === 'arrowdown');
-      if(isUp){
-        e.preventDefault();
-        setActiveInput('keyboard');
-        setFocusIndex((i)=> (i - 1 + len) % len);
-        return;
-      }
-      if(isDown){
-        e.preventDefault();
-        setActiveInput('keyboard');
-        setFocusIndex((i)=> (i + 1) % len);
-        return;
-      }
-      if(k === 'home'){
-        e.preventDefault();
-        setFocusIndex(0);
-        return;
-      }
-      if(k === 'end'){
-        e.preventDefault();
-        setFocusIndex(len - 1);
-        return;
-      }
-      if(k === 'enter' || k === ' '){
-        e.preventDefault();
-        setActiveInput('keyboard');
-        // activate current
-        if(focusIndex === 0) handleStart();
-        if(focusIndex === 1) handleSettings();
-        if(focusIndex === 2) handleCredits();
-      }
-    }
-    window.addEventListener('keydown', handleKey);
-    return ()=> window.removeEventListener('keydown', handleKey);
-  },[keyboardEnabled, starting, focusIndex, controlScheme, activeInput]);
+  // keyboard navigation handled by hook (useKeyboardNavigation)
 
   function handleStart() {
     if (starting) return;
@@ -156,13 +111,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
             autoFocus
             aria-disabled={starting}
             ref={(el: HTMLButtonElement|null) => { btnRefs.current[0] = el; }}
-              onMouseEnter={() => {
-                // if mouse navigation is allowed and user is not currently in keyboard-only mode
-                if(!mouseEnabled) return;
-                if(activeInput === 'keyboard') return;
-                setActiveInput('mouse');
-                setFocusIndex(0);
-              }}
+            onMouseEnter={() => { if(mouseEnabled) onMouseEnter(0); }}
           >{starting ? t('starting') : t('start_game')}</Button>
 
           <div className={styles.row}>
@@ -171,24 +120,14 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
               className={styles.menuButton}
               onClick={handleSettings}
               ref={(el: HTMLButtonElement|null) => { btnRefs.current[1] = el; }}
-              onMouseEnter={() => {
-                if(!mouseEnabled) return;
-                if(activeInput === 'keyboard') return;
-                setActiveInput('mouse');
-                setFocusIndex(1);
-              }}
+              onMouseEnter={() => { if(mouseEnabled) onMouseEnter(1); }}
             >{t('menu_settings')}</Button>
             <Button
               variant="secondary"
               className={styles.menuButton}
               onClick={handleCredits}
               ref={(el: HTMLButtonElement|null) => { btnRefs.current[2] = el; }}
-              onMouseEnter={() => {
-                if(!mouseEnabled) return;
-                if(activeInput === 'keyboard') return;
-                setActiveInput('mouse');
-                setFocusIndex(2);
-              }}
+              onMouseEnter={() => { if(mouseEnabled) onMouseEnter(2); }}
             >{t('menu_credits')}</Button>
             {/* simulate error removed */}
           </div>
