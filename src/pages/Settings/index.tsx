@@ -5,6 +5,7 @@ import styles from './Settings.module.css';
 import SETTINGS, { SettingMeta } from '../../config/settings';
 import config from '../../config';
 import { useI18n, Layout, Grid, useToast } from '../../components';
+import { useKeyboardNavigation } from '../../hooks';
 import { Toggle, Select, Range, NumberInput } from '../../components/Controls';
 import Card from '../../components/Card/Card';
 import { DEFAULT_CONFIG } from '../../config/defaults';
@@ -17,11 +18,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const [savedKey, setSavedKey] = useState<string | null>(null);
   const { t, setLocale } = useI18n();
   const [section, setSection] = useState<string>('all');
+  const btnRefs = React.useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(()=>{
     const cfg = config.loadConfig();
     setLocal({...cfg.settings});
   },[]);
+  
 
   function update(key:string, value:any){
     const next = {...local, [key]: value};
@@ -105,6 +108,25 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const activeSection = withLabels.find(s=>s.id===section) || withLabels[0];
   const visibleSettings = SETTINGS.filter(s=> activeSection.items.includes(s.id));
 
+  const keyboardEnabled = local.keyboardNavigation !== false;
+  const mouseEnabled = local.mouseNavigation !== false;
+  const visibleSettingsCount = visibleSettings.length;
+
+  const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
+    length: visibleSettingsCount,
+    controlScheme: (local.controlScheme as 'arrow'|'wasd') || 'arrow',
+    enabled: keyboardEnabled,
+    starting: false,
+    btnRefs: btnRefs as any,
+    onActivate: (idx) => {
+      // focus the control inside the setting row
+      const root = btnRefs.current[idx];
+      if(!root) return;
+      const ctrl = root.querySelector('input, select, button, [tabindex]:not([tabindex="-1"])') as HTMLElement | null;
+      if(ctrl) try{ ctrl.focus(); }catch(e){}
+    }
+  });
+
   return (
     <Layout title={t('settings_title')} subtitle={t('settings_subtitle')} sticky>
       <div className={styles.wrap}>
@@ -145,13 +167,19 @@ export default function Settings({onBack}:{onBack:()=>void}){
             </div>
 
             <section className={styles.right}>
-              {visibleSettings.map(s => (
+              {visibleSettings.map((s, i) => (
                 <Card
                   key={s.id}
                   className={`${s.implemented===false?styles.disabled:''} ${s.id==='difficulty' || s.id==='skin'?styles.full:''}`}
                   overlayLabel={s.implemented === false ? t('coming_soon') : null}
                 >
-                  <div className={styles.settingRow}>
+                  <div
+                    className={styles.settingRow}
+                    tabIndex={0}
+                    ref={(el) => { btnRefs.current[i] = el; }}
+                    onMouseEnter={() => { if(mouseEnabled) onMouseEnter(i); }}
+                    onFocus={() => { setActiveInput && setActiveInput('keyboard'); }}
+                  >
                     <div className={styles.settingInfo}>
                       <div className={styles.cardLabel}>{t(s.labelKey || s.label || s.id)}</div>
                       <div className={styles.cardDesc}>{s.description}</div>
