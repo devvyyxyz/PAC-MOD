@@ -116,6 +116,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
     length: visibleSettingsCount,
     controlScheme: (local.controlScheme as 'arrow'|'wasd') || 'arrow',
+    axis: 'horizontal',
     enabled: keyboardEnabled,
     starting: false,
     btnRefs: btnRefs as any,
@@ -216,11 +217,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onKeyDown={(e)=>{
                       const k = e.key.toLowerCase();
                       if(k === 'arrowleft'){
-                        e.preventDefault();
-                        // focus the active nav item
-                        const idx = withLabels.findIndex(s => s.id === section);
-                        const navEl = navRefs.current[idx];
-                        if(navEl) try{ navEl.focus(); }catch{}
+                        // if we're at the first setting, jump back to nav; otherwise allow horizontal navigation handled by the hook
+                        if(focusIndex === 0){
+                          e.preventDefault();
+                          const idx = withLabels.findIndex(s => s.id === section);
+                          const navEl = navRefs.current[idx];
+                          if(navEl) try{ navEl.focus(); }catch{}
+                        }
                       }
                     }}
                   >

@@ -5,13 +5,14 @@ type Scheme = 'arrow' | 'wasd';
 export function useKeyboardNavigation(opts: {
   length: number;
   controlScheme?: Scheme;
+  axis?: 'vertical' | 'horizontal';
   enabled?: boolean;
   starting?: boolean;
   btnRefs?: MutableRefObject<Array<HTMLElement | null>>;
   onActivate?: (index: number) => void;
   initialIndex?: number;
 }){
-  const { length, controlScheme = 'arrow', enabled = true, starting = false, btnRefs, onActivate, initialIndex = 0 } = opts;
+  const { length, controlScheme = 'arrow', axis = 'vertical', enabled = true, starting = false, btnRefs, onActivate, initialIndex = 0 } = opts;
   const [focusIndex, setFocusIndex] = useState<number>(initialIndex);
   const [activeInput, setActiveInput] = useState<'auto'|'mouse'|'keyboard'>('auto');
   const timeoutRef = useRef<number | null>(null);
@@ -40,16 +41,24 @@ export function useKeyboardNavigation(opts: {
       if(starting) return;
       if (!length || length <= 0) return;
       const k = e.key.toLowerCase();
-      const isUp = (controlScheme === 'wasd') ? (k === 'w') : (k === 'arrowup');
-      const isDown = (controlScheme === 'wasd') ? (k === 's') : (k === 'arrowdown');
-      if(isUp){
+      let isPrev = false;
+      let isNext = false;
+      if(axis === 'vertical'){
+        isPrev = (controlScheme === 'wasd') ? (k === 'w') : (k === 'arrowup');
+        isNext = (controlScheme === 'wasd') ? (k === 's') : (k === 'arrowdown');
+      }else{
+        isPrev = (controlScheme === 'wasd') ? (k === 'a') : (k === 'arrowleft');
+        isNext = (controlScheme === 'wasd') ? (k === 'd') : (k === 'arrowright');
+      }
+
+      if(isPrev){
         e.preventDefault();
         setActiveInput('keyboard');
         clearInactivityTimer();
         timeoutRef.current = window.setTimeout(()=>{ setActiveInput('mouse'); timeoutRef.current = null; }, 4000);
         setFocusIndex(i => (i - 1 + length) % length); return;
       }
-      if(isDown){
+      if(isNext){
         e.preventDefault();
         setActiveInput('keyboard');
         clearInactivityTimer();

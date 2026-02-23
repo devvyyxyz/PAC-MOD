@@ -19,6 +19,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
     length: focusableCount,
     controlScheme: controlScheme,
+    axis: 'horizontal',
     enabled: keyboardEnabled,
     starting: false,
     btnRefs: btnRefs as any,
@@ -72,6 +73,29 @@ export default function Credits({onBack}:{onBack:()=>void}){
       btnRefs.current = [];
     };
   },[keyboardEnabled, controlScheme, focusIndex]);
+
+  // allow up/down navigation across the grid by computing column count
+  React.useEffect(()=>{
+    if(!keyboardEnabled) return;
+    function handleGridNav(e: KeyboardEvent){
+      const k = e.key.toLowerCase();
+      if(!(k === 'arrowup' || k === 'arrowdown' || k === 'w' || k === 's')) return;
+      const grid = stageRef.current?.querySelector('.' + styles.cards.split(' ').join('.')) as HTMLElement | null;
+      if(!grid) return;
+      const colsStyle = window.getComputedStyle(grid).gridTemplateColumns || '';
+      const cols = colsStyle.trim() ? colsStyle.split(' ').length : 3;
+      e.preventDefault();
+      setActiveInput && setActiveInput('keyboard');
+      // move up or down by 'cols'
+      if(k === 'arrowup' || k === 'w'){
+        setFocusIndex(i => Math.max(0, i - cols));
+      }else if(k === 'arrowdown' || k === 's'){
+        setFocusIndex(i => Math.min((focusableCount || 0) - 1, i + cols));
+      }
+    }
+    window.addEventListener('keydown', handleGridNav);
+    return ()=> window.removeEventListener('keydown', handleGridNav);
+  }, [keyboardEnabled, focusableCount, setFocusIndex, setActiveInput]);
 
   
   return (
