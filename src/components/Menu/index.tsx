@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './Menu.module.css';
 import { useI18n, Layout } from '../../components';
 import config from '../../config';
+import AUDIO from '../../config/audio';
 import Title from '../Title';
 import { playChomp } from '../../utils/audio';
 import Button from '../Button';
@@ -18,10 +19,11 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
       const cfg = config.loadConfig();
       const enabled = cfg.settings?.music !== false;
       const vol = (typeof cfg.settings?.volume === 'number') ? (cfg.settings.volume / 100) : 0.7;
-      const src = encodeURI('/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav');
+      const audioEntry = AUDIO.menuAmbience;
+      const src = encodeURI(audioEntry?.src || '/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav');
       const a = new Audio(src);
       a.loop = true;
-      a.volume = vol;
+      a.volume = typeof audioEntry?.defaultVolume === 'number' ? (audioEntry.defaultVolume * vol) : vol;
       audioRef.current = a;
       if(enabled){
         a.play().catch(()=>{});
