@@ -1,5 +1,4 @@
 .root{ }
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap');
 :root{--panel:rgba(255,255,255,0.02);--card-bg:rgba(255,255,255,0.02);} 
 .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
 .stage{width:min(860px,94vw);padding:22px;border-radius:12px;background:var(--card-bg);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
