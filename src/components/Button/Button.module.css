@@ -8,8 +8,8 @@
 .btn::after{content:'→';position:absolute;right:14px;top:50%;transform:translateY(-50%) translateX(8px);opacity:0;color:currentColor;font-weight:800;font-size:18px;transition:transform .28s cubic-bezier(.2,.9,.2,1),opacity .18s;z-index:3}
 .btn:hover::after,.btn:focus::after,.btn[data-focused="true"]::after{transform:translateY(-50%) translateX(0);opacity:1}
 
-.primary{background:var(--bg);color:var(--accent);font-weight:800;font-size:18px;padding:14px;border-radius:14px;box-shadow:0 14px 40px rgba(255,176,56,0.08)}
+.primary{background:var(--bg);color:var(--accent);font-weight:800;font-size:16px;padding:12px 18px;border-radius:12px;box-shadow:0 14px 40px rgba(255,176,56,0.08)}
 .primary:hover{box-shadow:0 20px 120px rgba(255,176,56,0.14),0 10px 30px rgba(0,0,0,0.6)}
-.secondary{background:var(--bg);color:var(--accent);border:3px solid var(--accent);font-weight:700;padding:10px 14px;border-radius:12px}
+.secondary{background:var(--bg);color:var(--accent);border:3px solid var(--accent);font-weight:700;font-size:16px;padding:12px 18px;border-radius:12px}
 .full{width:100%}
 .muted{opacity:0.6}
