@@ -14,6 +14,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
   const [keyboardEnabled, setKeyboardEnabled] = React.useState(true);
   const [mouseEnabled, setMouseEnabled] = React.useState(true);
   const [focusIndex, setFocusIndex] = React.useState(0);
+  const [controlScheme, setControlScheme] = React.useState<'arrow'|'wasd'>('arrow');
   const { t } = useI18n();
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const btnRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
@@ -25,6 +26,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
       const vol = (typeof cfg.settings?.volume === 'number') ? (cfg.settings.volume / 100) : 0.7;
       setKeyboardEnabled(cfg.settings?.keyboardNavigation !== false);
       setMouseEnabled(cfg.settings?.mouseNavigation !== false);
+      setControlScheme((cfg.settings?.controlScheme as 'arrow'|'wasd') || 'arrow');
       const audioEntry = AUDIO.menuAmbience;
       const src = encodeURI(audioEntry?.src || '/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav');
       const a = new Audio(src);
@@ -45,6 +47,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
         const vol = (typeof detail?.settings?.volume === 'number') ? (detail.settings.volume / 100) : 0.7;
         setKeyboardEnabled(detail?.settings?.keyboardNavigation !== false);
         setMouseEnabled(detail?.settings?.mouseNavigation !== false);
+        setControlScheme((detail?.settings?.controlScheme as 'arrow'|'wasd') || 'arrow');
         if(!audioRef.current){
           const a = new Audio(encodeURI('/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav'));
           a.loop = true;
@@ -81,19 +84,31 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
       if(!keyboardEnabled) return;
       if(starting) return;
       const len = 3;
-      if(e.key === 'ArrowUp'){
+      const k = e.key.toLowerCase();
+      // navigation keys depend on controlScheme
+      const isUp = (controlScheme === 'wasd') ? (k === 'w') : (k === 'arrowup');
+      const isDown = (controlScheme === 'wasd') ? (k === 's') : (k === 'arrowdown');
+      if(isUp){
         e.preventDefault();
         setFocusIndex((i)=> (i - 1 + len) % len);
-      } else if(e.key === 'ArrowDown'){
+        return;
+      }
+      if(isDown){
         e.preventDefault();
         setFocusIndex((i)=> (i + 1) % len);
-      } else if(e.key === 'Home'){
+        return;
+      }
+      if(k === 'home'){
         e.preventDefault();
         setFocusIndex(0);
-      } else if(e.key === 'End'){
+        return;
+      }
+      if(k === 'end'){
         e.preventDefault();
         setFocusIndex(len - 1);
-      } else if(e.key === 'Enter' || e.key === ' '){
+        return;
+      }
+      if(k === 'enter' || k === ' '){
         e.preventDefault();
         // activate current
         if(focusIndex === 0) handleStart();
@@ -103,7 +118,7 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
     }
     window.addEventListener('keydown', handleKey);
     return ()=> window.removeEventListener('keydown', handleKey);
-  },[keyboardEnabled, starting, focusIndex]);
+  },[keyboardEnabled, starting, focusIndex, controlScheme]);
 
   function handleStart() {
     if (starting) return;
