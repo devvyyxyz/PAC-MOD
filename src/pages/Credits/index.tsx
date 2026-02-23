@@ -72,7 +72,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
 
   
   return (
-    <div className={`${menuStyles.wrap} ${styles.pageWrap}`}>
+    <div className={`${menuStyles.wrap} ${styles.pageWrap} ${activeInput === 'keyboard' ? 'no-mouse' : ''}`}>
       <div className={menuStyles.bg} aria-hidden />
       <div className={menuStyles.stage} role="main" ref={stageRef}>
         <Title title={t('credits_title')} subtitle={t('credits_subtitle')} sticky className={`${menuStyles.title} ${styles.stickyTitle}`} />

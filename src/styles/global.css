@@ -17,3 +17,8 @@ body{
 /* Game enter animation for the game screen */
 .game-enter{animation:fadeInFromBlack .6s ease forwards}
 @keyframes fadeInFromBlack{0%{opacity:0;transform:scale(.995)}100%{opacity:1;transform:scale(1)}}
+
+/* Hide the mouse cursor when keyboard navigation is active */
+.no-mouse, .no-mouse * {
+  cursor: none !important;
+}
