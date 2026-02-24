@@ -165,6 +165,16 @@ export default function Settings({onBack}:{onBack:()=>void}){
     }catch(e){}
   }
 
+  // Scroll helper to keep focused setting rows centered in the right column
+  function ensureRightVisible(el?: HTMLElement | null){
+    try{
+      const container = rightColumnRef.current;
+      if(!container || !el) return;
+      // use scrollIntoView so the row is centered within the right column
+      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' } as ScrollIntoViewOptions);
+    }catch(e){}
+  }
+
   const withLabels = SECTIONS.map(s => ({ ...s, label: (
     // prefer explicit translation key if present, otherwise humanize the id
     (t(`settings_section_${s.id}`) !== `settings_section_${s.id}` ? t(`settings_section_${s.id}`) : (s.id.charAt(0).toUpperCase() + s.id.slice(1)))
@@ -525,7 +535,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     tabIndex={0}
                     ref={(el) => { btnRefs.current[i] = el; }}
                     onMouseEnter={() => { if(savedMouseEnabled) onMouseEnter(i); }}
-                    onFocus={() => { setActiveInput && setActiveInput('keyboard'); setFocusIndex(i); }}
+                    onFocus={(e) => { setActiveInput && setActiveInput('keyboard'); setFocusIndex(i); ensureRightVisible(e.currentTarget as HTMLElement); }}
                     onKeyDown={(e)=>{
                       const k = e.key.toLowerCase();
                       const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
