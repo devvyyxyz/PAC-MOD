@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './Button.module.css';
+import Icon from '../Icon/Icon';
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary';
@@ -18,7 +19,7 @@ const Button = React.forwardRef<HTMLButtonElement, Props>(function Button({varia
 
   return (
     <button ref={ref} className={cls} {...rest}>
-      {icon ? <span className={styles.iconWrap}><img src={`/assets/icons/${icon}.svg`} alt="" width={18} height={18} style={{display:'block'}}/></span> : null}
+      {icon ? <span className={styles.iconWrap}><Icon name={icon as any} size={18} /></span> : null}
       {children}
     </button>
   );

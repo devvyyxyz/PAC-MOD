@@ -29,6 +29,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const [savedMouseEnabled, setSavedMouseEnabled] = React.useState<boolean>(()=>{
     try{ return config.loadConfig().settings?.mouseNavigation !== false; }catch(e){ return true; }
   });
+  // savedSettings is declared earlier; avoid duplicate declaration.
   useEffect(()=>{
     const cfg = config.loadConfig();
     setLocal({...cfg.settings});
