@@ -15,7 +15,6 @@ type LocalSettings = Record<string, any>;
 export default function Settings({onBack}:{onBack:()=>void}){
   const [local, setLocal] = useState<LocalSettings>({});
   const toast = useToast();
-  const [savedKey, setSavedKey] = useState<string | null>(null);
   const { t, setLocale } = useI18n();
   const [section, setSection] = useState<string>('all');
   const btnRefs = React.useRef<Array<HTMLDivElement | null>>([]);
@@ -39,13 +38,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
   function update(key:string, value:any){
     const next = {...local, [key]: value};
     setLocal(next);
-    // autosave for some realtime controls (audio)
-    const AUTOSAVE_KEYS = ['sound','music','volume','maxLives'];
-    if(AUTOSAVE_KEYS.includes(key)){
-      config.saveConfig({settings: next as any});
-      setSavedKey(key);
-      setTimeout(()=>{ if(savedKey===key) setSavedKey(null); }, 1500);
-    }
+    // No autosave: changes are staged in `local` and will be persisted
+    // only when the user presses Apply.
 
   }
 
@@ -212,7 +206,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
     // (controlled via `savedKey`). Previously we also compared against persisted
     // `savedSettings`, which made all controls show "Saved" when local equals
     // persisted — remove that behavior.
-    const saved = savedKey === s.id;
+    const saved = false;
 
     switch(s.type){
       case 'toggle':
