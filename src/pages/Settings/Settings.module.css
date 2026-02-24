@@ -32,6 +32,9 @@
 .settingInfo .cardLabel{color:var(--muted);font-weight:700;margin-bottom:6px}
 .settingInfo .cardDesc{margin:0;font-size:13px;color:rgba(255,255,255,0.65)}
 
+/* small badge to indicate a setting differs from the default */
+.changedBadge{display:inline-block;background:rgba(255,176,56,0.08);color:#ffd84d;border:1px solid rgba(255,176,56,0.12);padding:2px 6px;border-radius:999px;font-size:11px;margin-left:8px}
+
 /* highlight card when hovered or keyboard-focused */
 .settingRow:hover, .settingRow:focus, .settingRow[data-focused="true"]{
   outline: 2px solid rgba(255,208,90,0.18);

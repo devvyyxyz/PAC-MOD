@@ -363,7 +363,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
                 </div>
               ) : null}
 
-              {visibleSettings.map((s, i) => (
+              {visibleSettings.map((s, i) => {
+                const current = (local && typeof local[s.id] !== 'undefined') ? local[s.id] : (savedSettings && typeof savedSettings[s.id] !== 'undefined' ? savedSettings[s.id] : (DEFAULT_CONFIG.settings as any)[s.id]);
+                const defaultVal = (DEFAULT_CONFIG.settings as any)[s.id];
+                const changedFromDefault = (()=>{
+                  try{ return JSON.stringify(current) !== JSON.stringify(defaultVal); }catch(e){ return current !== defaultVal; }
+                })();
+                return (
                 <Card
                   key={s.id}
                   className={`${s.implemented===false?styles.disabled:''} ${s.id==='difficulty' || s.id==='skin'?styles.full:''}`}
@@ -387,7 +393,10 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     }}
                   >
                     <div className={styles.settingInfo}>
-                      <div className={styles.cardLabel}>{t(s.labelKey || s.label || s.id)}</div>
+                      <div className={styles.cardLabel}>
+                        {t(s.labelKey || s.label || s.id)}
+                        {changedFromDefault ? <span className={styles.changedBadge}>{t('settings_modified') || 'Modified'}</span> : null}
+                      </div>
                       <div className={styles.cardDesc}>{s.description}</div>
                     </div>
                     <div className={styles.settingControl}>
@@ -395,7 +404,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     </div>
                   </div>
                 </Card>
-              ))}
+              );
+            })}
             </section>
           </div>
 
