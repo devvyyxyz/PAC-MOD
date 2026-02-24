@@ -23,6 +23,11 @@
 
 /* suppress the native focus ring on the wrapper while keeping visible card transform */
 .cardLinkWrap:focus{outline:none}
+/* When keyboard navigation is active we hide mouse hover visuals but keep keyboard focus outlines */
+.no-mouse .cardLinkWrap:hover .card{
+  transform: none;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.45);
+}
 .cardFooter{display:flex;justify-content:flex-end;align-items:center;gap:6px}
 
 .stickyTitle{position:sticky;top:20px;z-index:30;padding:6px 0;background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);border-radius:8px}
