@@ -52,6 +52,15 @@ export default function Credits({onBack}:{onBack:()=>void}){
     return ()=> window.removeEventListener('pacman.config.changed', onCfg as EventListener);
   },[]);
 
+  // helper to ensure a focused card is visible and centered inside the stage
+  function ensureStageVisible(el?: HTMLElement | null){
+    try{
+      const container = stageRef.current;
+      if(!container || !el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' } as ScrollIntoViewOptions);
+    }catch(e){}
+  }
+
   // manage keyboard navigation within credits
   React.useEffect(()=>{
     // compute focusable nodes and wire them to btnRefs for the keyboard hook
@@ -130,14 +139,28 @@ export default function Credits({onBack}:{onBack:()=>void}){
 
             if(c.url){
               return (
-                <a key={c.id} className={styles.cardLinkWrap} href={c.url} target="_blank" rel="noopener noreferrer" onMouseEnter={()=>{ if(mouseEnabled) onMouseEnter(idx); }}>
+                <a
+                  key={c.id}
+                  className={styles.cardLinkWrap}
+                  href={c.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onMouseEnter={()=>{ if(mouseEnabled) onMouseEnter(idx); }}
+                  onFocus={(e)=>{ setFocusIndex(idx); ensureStageVisible(e.currentTarget as HTMLElement); setActiveInput && setActiveInput('keyboard'); }}
+                >
                   {CardInner}
                 </a>
               );
             }
 
             return (
-              <div key={c.id} className={styles.cardLinkWrap} tabIndex={0} onMouseEnter={()=>{ if(mouseEnabled) onMouseEnter(idx); }}>
+              <div
+                key={c.id}
+                className={styles.cardLinkWrap}
+                tabIndex={0}
+                onMouseEnter={()=>{ if(mouseEnabled) onMouseEnter(idx); }}
+                onFocus={(e)=>{ setFocusIndex(idx); ensureStageVisible(e.currentTarget as HTMLElement); setActiveInput && setActiveInput('keyboard'); }}
+              >
                 {CardInner}
               </div>
             );
