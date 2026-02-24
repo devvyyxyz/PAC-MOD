@@ -208,7 +208,11 @@ export default function Settings({onBack}:{onBack:()=>void}){
   function renderControl(s: SettingMeta){
     const val = (local && typeof local[s.id] !== 'undefined') ? local[s.id] : (savedSettings && typeof savedSettings[s.id] !== 'undefined' ? savedSettings[s.id] : (DEFAULT_CONFIG.settings as any)[s.id]);
     const disabled = s.implemented === false;
-    const saved = savedKey === s.id || (typeof savedSettings[s.id] !== 'undefined' && savedSettings[s.id] === val);
+    // Only show the transient "Saved" indicator for keys that were just autosaved
+    // (controlled via `savedKey`). Previously we also compared against persisted
+    // `savedSettings`, which made all controls show "Saved" when local equals
+    // persisted — remove that behavior.
+    const saved = savedKey === s.id;
 
     switch(s.type){
       case 'toggle':
