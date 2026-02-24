@@ -28,6 +28,13 @@ const SETTINGS: SettingMeta[] = [
   { id: 'highContrast', labelKey: 'setting_highContrast', category: 'accessibility', type: 'toggle', implemented: false, description: 'Experimental accessibility mode (coming soon)' },
   { id: 'onlineLeaderboard', labelKey: 'setting_onlineLeaderboard', category: 'online', type: 'toggle', implemented: false, description: 'Upload scores to global leaderboard (not yet implemented)' },
   { id: 'locale', labelKey: 'setting_language', category: 'general', type: 'select', implemented: true, options: ['en','es','pl'], description: 'UI Language' }
+  ,
+  { id: 'retroFilter', labelKey: 'setting_retroFilter', category: 'display', type: 'toggle', implemented: false, description: 'CRT-style scanlines and blur (coming soon)' },
+  { id: 'particleEffects', labelKey: 'setting_particleEffects', category: 'display', type: 'toggle', implemented: false, description: 'Toggle particle effects in gameplay (coming soon)' },
+  { id: 'controllerRumble', labelKey: 'setting_controllerRumble', category: 'controls', type: 'toggle', implemented: false, description: 'Enable vibration for controllers (coming soon)' },
+  { id: 'cloudSaves', labelKey: 'setting_cloudSaves', category: 'online', type: 'toggle', implemented: false, description: 'Save progress to cloud (coming soon)' },
+  { id: 'autoPause', labelKey: 'setting_autoPause', category: 'gameplay', type: 'toggle', implemented: false, description: 'Automatically pause when unfocused (coming soon)' },
+  { id: 'advancedGraphics', labelKey: 'setting_advancedGraphics', category: 'display', type: 'toggle', implemented: false, description: 'Advanced rendering features (coming soon)' }
 ];
 
 export default SETTINGS;
