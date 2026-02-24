@@ -7,7 +7,7 @@ type IconName = keyof typeof ICONS;
 const svgCache = new Map<string,string>();
 
 export default function Icon({ name, size = 20, className = '', title, onClick }: { name: IconName; size?: number; className?: string; title?: string; onClick?: () => void }){
-  const cls = `${styles.icon} ${onClick ? styles.clickable : ''} ${className}`.trim();
+  const cls = `${styles.icon} icon ${onClick ? styles.clickable : ''} ${className}`.trim();
   const cfg = (ICONS as any)[name] || { src: `/assets/icons/${name}.svg` };
   const src = cfg.src || `/assets/icons/${name}.svg`;
   const style: React.CSSProperties = {};

@@ -29,4 +29,4 @@
 .btn:hover .iconWrap img,.btn:focus .iconWrap img,.btn[data-focused="true"] .iconWrap img{filter:none}
 
 /* When the button is hovered/focused, set inline SVG/icon color to the configured hover color (fallback to #071018) */
-.btn:hover .icon,.btn:focus .icon,.btn[data-focused="true"] .icon{color:var(--icon-hover-color,#071018)}
+.btn:hover :global(.icon),.btn:focus :global(.icon),.btn[data-focused="true"] :global(.icon){color:var(--icon-hover-color,#071018)}
