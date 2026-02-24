@@ -11,7 +11,7 @@ export default function GamePlay({options, onBack}:{options:GameOptions; onBack:
       <div style={{padding:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <div style={{color:'var(--muted)',fontSize:13}}>{t('game_ready')}</div>
         <div>
-          <Button variant="secondary" onClick={onBack}>{t('exit')}</Button>
+          <Button variant="secondary" icon="close" onClick={onBack}>{t('exit')}</Button>
         </div>
       </div>
 

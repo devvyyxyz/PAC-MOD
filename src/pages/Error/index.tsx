@@ -67,9 +67,9 @@ export default function ErrorPage({error, info, onBack}:{error:Error, info?:Reac
 
         <div style={{width:'100%',display:'flex',justifyContent:'center'}}>
           <div style={{display:'flex',gap:12,alignItems:'center'}}>
-            <Button variant="primary" className={`${styles.actionBtn}`} onClick={handleSend} disabled={sending}>{sending? t('sending') : t('send_crash')}</Button>
-            <Button variant="secondary" className={styles.actionBtn} onClick={handleBack}>{t('return_menu')}</Button>
-            <Button variant="secondary" className={`${styles.actionBtn} ${styles.copyBtn}`} onClick={handleCopy}>{copied? copied : t('copy_details')}</Button>
+            <Button variant="primary" className={`${styles.actionBtn}`} icon="send" onClick={handleSend} disabled={sending}>{sending? t('sending') : t('send_crash')}</Button>
+            <Button variant="secondary" className={styles.actionBtn} icon="close" onClick={handleBack}>{t('return_menu')}</Button>
+            <Button variant="secondary" className={`${styles.actionBtn} ${styles.copyBtn}`} icon="copy" onClick={handleCopy}>{copied? copied : t('copy_details')}</Button>
             {result && <div className={styles.sendStatus}>Report status: {result}</div>}
           </div>
         </div>

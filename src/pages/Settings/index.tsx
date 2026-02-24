@@ -658,6 +658,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                 <div className={styles.leftButtons}>
                 <Button
                   variant="primary"
+                  icon="check"
                   onClick={handleApply}
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[0] = el; }}
                     onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
@@ -685,6 +686,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
                 <Button
                   variant="secondary"
+                  icon="refresh"
                   onClick={handleReset}
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[1] = el; }}
                     onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
@@ -711,6 +713,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
                 <Button
                   variant="secondary"
+                  icon="close"
                   onClick={onBack}
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[2] = el; }}
                     onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}

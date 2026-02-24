@@ -18,3 +18,5 @@
 .secondary{background:var(--bg);color:var(--accent);border:3px solid var(--accent);font-weight:700;font-size:16px;padding:12px 18px;border-radius:12px}
 .full{width:100%}
 .muted{opacity:0.6}
+
+.iconWrap{display:inline-flex;align-items:center;justify-content:center;margin-right:8px;width:18px;height:18px}

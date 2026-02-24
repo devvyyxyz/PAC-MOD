@@ -79,8 +79,8 @@ export default function GameSetup({onPlay, onBack}:{onPlay:(opts:GameOptions)=>v
             <div className={styles.small}>{t('summary_music') || t('music')}: {music? t('summary_music_on') : t('summary_music_off')}</div>
 
             <div style={{height:12}} />
-            <Button variant="primary" className={styles.playBtn} onClick={()=>onPlay({skin,difficulty,sound,music})}>{t('play')}</Button>
-            <Button variant="secondary" style={{marginTop:8}} onClick={onBack}>{t('back')}</Button>
+            <Button variant="primary" className={styles.playBtn} icon="play" onClick={()=>onPlay({skin,difficulty,sound,music})}>{t('play')}</Button>
+            <Button variant="secondary" style={{marginTop:8}} icon="close" onClick={onBack}>{t('back')}</Button>
           </div>
             </div>
           </Grid>

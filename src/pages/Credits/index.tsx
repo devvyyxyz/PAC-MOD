@@ -183,7 +183,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
         </Grid>
 
         <div style={{marginTop:18,width:'100%',display:'flex',justifyContent:'center'}}>
-          <Button variant="secondary" onClick={onBack}>{t('back')}</Button>
+          <Button variant="secondary" icon="close" onClick={onBack}>{t('back')}</Button>
         </div>
 
         <div className={menuStyles.footer} style={{width:'100%',textAlign:'center'}}>{t('credits_footer')}</div>
