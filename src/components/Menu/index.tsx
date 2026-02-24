@@ -6,7 +6,7 @@ import config from '../../config';
 import AUDIO from '../../config/audio';
 import Title from '../Title';
 import Icon from '../Icon/Icon';
-import { playChomp } from '../../utils/audio';
+import { playSfx } from '../../utils/audio';
 import Button from '../Button';
 
 type Props = { onStart?: () => void, onOpenSettings?: ()=>void, onOpenCredits?: ()=>void, onError?: ()=>void };
@@ -41,48 +41,39 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
     try{
       const cfg = config.loadConfig();
       const enabled = cfg.settings?.music !== false;
-      const vol = (typeof cfg.settings?.volume === 'number') ? (cfg.settings.volume / 100) : 0.7;
       setKeyboardEnabled(cfg.settings?.keyboardNavigation !== false);
       setMouseEnabled(cfg.settings?.mouseNavigation !== false);
       setControlScheme((cfg.settings?.controlScheme as 'arrow'|'wasd') || 'arrow');
-      const audioEntry = AUDIO.menuAmbience;
-      const src = encodeURI(audioEntry?.src || '/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav');
-      const a = new Audio(src);
-      a.loop = true;
-      a.volume = typeof audioEntry?.defaultVolume === 'number' ? (audioEntry.defaultVolume * vol) : vol;
-      audioRef.current = a;
+      // play configured menu ambience via utils so audio is managed from config
       if(enabled){
-        a.play().catch(()=>{});
+        // lazy require to avoid circulars
+        const audioUtils = require('../../utils/audio') as typeof import('../../utils/audio');
+        audioRef.current = audioUtils.playMusic ? audioUtils.playMusic('menuAmbience') : null;
       }
     }catch(e){ /* ignore */ }
 
     function handleCfgChange(e: Event){
       try{
-        // detail contains merged config
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const detail = (e as CustomEvent).detail as any;
         const enabled = detail?.settings?.music !== false;
         const vol = (typeof detail?.settings?.volume === 'number') ? (detail.settings.volume / 100) : 0.7;
         setKeyboardEnabled(detail?.settings?.keyboardNavigation !== false);
         setMouseEnabled(detail?.settings?.mouseNavigation !== false);
-        // if settings change, reset active input to auto so user can use either
         setActiveInput && setActiveInput('auto');
         setControlScheme((detail?.settings?.controlScheme as 'arrow'|'wasd') || 'arrow');
-        if(!audioRef.current){
-          const a = new Audio(encodeURI('/assets/audio/GameSFX/Ambience/Retro Ambience Short 09.wav'));
-          a.loop = true;
-          audioRef.current = a;
-        }
-        if(audioRef.current){
-          audioRef.current.volume = vol;
-          if(enabled){ audioRef.current.play().catch(()=>{}); } else { audioRef.current.pause(); }
+        const audioUtils = require('../../utils/audio') as typeof import('../../utils/audio');
+        if(enabled){
+          audioRef.current = audioUtils.playMusic ? audioUtils.playMusic('menuAmbience') : audioRef.current;
+        }else{
+          audioUtils.stopMusic && audioUtils.stopMusic();
+          audioRef.current = null;
         }
       }catch(err){ }
     }
 
     window.addEventListener('pacman.config.changed', handleCfgChange as EventListener);
     return () => {
-      try{ window.removeEventListener('pacman.config.changed', handleCfgChange as EventListener); if(audioRef.current){ audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null; } }catch(e){}
+      try{ window.removeEventListener('pacman.config.changed', handleCfgChange as EventListener); const audioUtils = require('../../utils/audio') as typeof import('../../utils/audio'); audioUtils.stopMusic && audioUtils.stopMusic(); audioRef.current = null; }catch(e){}
     };
   },[]);
 
@@ -90,13 +81,13 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
 
   function handleStart() {
     if (starting) return;
-    playChomp();
+    playSfx('uiClick');
     setStarting(true);
     setTimeout(() => { if (onStart) onStart(); }, 600);
   }
 
-  function handleSettings(){ playChomp(); if(onOpenSettings) onOpenSettings(); }
-  function handleCredits(){ playChomp(); if(onOpenCredits) onOpenCredits(); }
+  function handleSettings(){ playSfx('uiClick'); if(onOpenSettings) onOpenSettings(); }
+  function handleCredits(){ playSfx('uiClick'); if(onOpenCredits) onOpenCredits(); }
   function handleError(){ if(onError) onError(); }
 
   return (

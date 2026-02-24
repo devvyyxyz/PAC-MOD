@@ -1,4 +1,6 @@
 import { useRef, useCallback, useState } from 'react';
+import AUDIO from '../config/audio';
+import config from '../config';
 
 type PlayOpts = { volume?: number; loop?: boolean };
 
@@ -17,10 +19,38 @@ export function useAudio(){
     }catch(e){ return null; }
   }, [volume]);
 
+  const playByName = useCallback((name: string, opts?: PlayOpts) => {
+    try{
+      const entry = (AUDIO as any)[name];
+      if(!entry) return null;
+      const cfg = config.loadConfig();
+      const vol = (typeof cfg.settings?.volume === 'number') ? (cfg.settings.volume / 100) : volume;
+      const a = new Audio(encodeURI(entry.src));
+      a.volume = typeof entry.defaultVolume === 'number' ? (entry.defaultVolume * vol) : vol;
+      a.loop = typeof entry.loop === 'boolean' ? entry.loop : !!opts?.loop;
+      a.play().catch(()=>{});
+      return a;
+    }catch(e){ return null; }
+  }, [volume]);
+
   const playSound = useCallback((id: string, url: string, vol?: number) => {
     try{
       const a = new Audio(url);
       a.volume = typeof vol === 'number' ? vol : volume;
+      a.play().catch(()=>{});
+      sounds.current[id] = a;
+      return a;
+    }catch(e){ return null; }
+  }, [volume]);
+
+  const playSoundByName = useCallback((id: string, name: string) => {
+    try{
+      const entry = (AUDIO as any)[name];
+      if(!entry) return null;
+      const cfg = config.loadConfig();
+      const vol = (typeof cfg.settings?.volume === 'number') ? (cfg.settings.volume / 100) : volume;
+      const a = new Audio(encodeURI(entry.src));
+      a.volume = typeof entry.defaultVolume === 'number' ? (entry.defaultVolume * vol) : vol;
       a.play().catch(()=>{});
       sounds.current[id] = a;
       return a;
@@ -44,6 +74,22 @@ export function useAudio(){
     }catch(e){ return null; }
   }, [volume]);
 
+  const playMusicByName = useCallback((name: string) => {
+    try{
+      const entry = (AUDIO as any)[name];
+      if(!entry) return null;
+      if(music.current){ music.current.pause(); }
+      const cfg = config.loadConfig();
+      const vol = (typeof cfg.settings?.volume === 'number') ? (cfg.settings.volume / 100) : volume;
+      const m = new Audio(encodeURI(entry.src));
+      m.loop = !!entry.loop;
+      m.volume = typeof entry.defaultVolume === 'number' ? (entry.defaultVolume * vol) : vol;
+      m.play().catch(()=>{});
+      music.current = m;
+      return m;
+    }catch(e){ return null; }
+  }, [volume]);
+
   const stopMusic = useCallback(() => {
     if(music.current){ music.current.pause(); music.current = null; }
   }, []);
@@ -57,9 +103,12 @@ export function useAudio(){
 
   return {
     play,
+    playByName,
     playSound,
+    playSoundByName,
     stopSound,
     playMusic,
+    playMusicByName,
     stopMusic,
     setVolume,
     volume,
