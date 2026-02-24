@@ -22,3 +22,13 @@ body{
 .no-mouse, .no-mouse * {
   cursor: none !important;
 }
+
+/* subtle pulse when switching input mode to keyboard */
+@keyframes inputModePulse {
+  0% { box-shadow: 0 0 0 0 rgba(255,208,90,0.0); transform: none; }
+  40% { box-shadow: 0 6px 30px rgba(255,208,90,0.06); transform: translateY(-2px) scale(1.002); }
+  100% { box-shadow: 0 0 0 0 rgba(255,208,90,0.0); transform: none; }
+}
+.no-mouse .wrap, .no-mouse .stage {
+  animation: inputModePulse .28s ease;
+}

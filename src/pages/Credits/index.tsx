@@ -80,7 +80,10 @@ export default function Credits({onBack}:{onBack:()=>void}){
     if(!keyboardEnabled) return;
     function handleGridNav(e: KeyboardEvent){
       const k = e.key.toLowerCase();
-      if(!(k === 'arrowup' || k === 'arrowdown' || k === 'w' || k === 's')) return;
+      // determine which keys are active based on controlScheme
+      const upKey = controlScheme === 'wasd' ? 'w' : 'arrowup';
+      const downKey = controlScheme === 'wasd' ? 's' : 'arrowdown';
+      if(!(k === upKey || k === downKey)) return;
       const grid = stageRef.current?.querySelector('.' + styles.cards.split(' ').join('.')) as HTMLElement | null;
       if(!grid) return;
       const colsStyle = window.getComputedStyle(grid).gridTemplateColumns || '';
@@ -88,9 +91,9 @@ export default function Credits({onBack}:{onBack:()=>void}){
       e.preventDefault();
       setActiveInput && setActiveInput('keyboard');
       // move up or down by 'cols'
-      if(k === 'arrowup' || k === 'w'){
+      if(k === upKey){
         setFocusIndex(i => Math.max(0, i - cols));
-      }else if(k === 'arrowdown' || k === 's'){
+      }else if(k === downKey){
         setFocusIndex(i => Math.min((focusableCount || 0) - 1, i + cols));
       }
     }

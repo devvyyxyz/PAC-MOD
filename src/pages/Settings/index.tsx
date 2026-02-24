@@ -23,7 +23,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const leftButtonRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const leftColumnRef = React.useRef<HTMLElement | null>(null);
   const rightColumnRef = React.useRef<HTMLElement | null>(null);
-
+  
+  const [savedKeyboardEnabled, setSavedKeyboardEnabled] = React.useState<boolean>(()=>{
+    try{ return config.loadConfig().settings?.keyboardNavigation !== false; }catch(e){ return true; }
+  });
+  const [savedMouseEnabled, setSavedMouseEnabled] = React.useState<boolean>(()=>{
+    try{ return config.loadConfig().settings?.mouseNavigation !== false; }catch(e){ return true; }
+  });
   useEffect(()=>{
     const cfg = config.loadConfig();
     setLocal({...cfg.settings});
@@ -43,66 +49,76 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
   }
 
-  function handleApply(){
-    config.saveConfig({settings: local as any});
-    if(local.locale) setLocale(local.locale);
-    toast.show({ message: t('settings_applied'), type: 'success', duration: 2000 });
-  }
-
-  function renderControl(s: SettingMeta){
-    const val = local[s.id];
-    const disabled = s.implemented === false;
-    const saved = savedKey === s.id;
-
-    if(s.type === 'toggle'){
-      return <Toggle checked={!!val} onChange={(v)=>update(s.id,v)} disabled={disabled} saved={saved} label={s.label} />;
-    }
-    if(s.type === 'select'){
-      const displayOptions = s.options || [];
-      return (
-        <div>
-          <Select value={val || displayOptions[0]} onChange={(v)=>update(s.id,v)} options={displayOptions} disabled={disabled} saved={saved} />
-        </div>
-      );
-    }
-    if(s.type === 'range'){
-      const v = typeof val === 'number' ? val : 70;
-      return <Range value={v} onChange={(n)=>update(s.id,n)} disabled={disabled} saved={saved} />;
-    }
-    if(s.type === 'number'){
-      return <NumberInput value={val ?? 3} onChange={(n)=>update(s.id,n)} disabled={disabled} saved={saved} />;
-    }
-    if(s.id === 'locale'){
-      const cur = local['locale'] || 'en';
-      const NATIVE_LANG: Record<string,string> = { en: 'English', es: 'Español', pl: 'Polski' };
-      return (
-        <Select value={cur} onChange={(v)=>{ update('locale', v); setLocale(v); }} options={s.options || []} />
-      );
-    }
-    return null;
-  }
-
-  function handleReset(){
-    const defaults = DEFAULT_CONFIG.settings;
-    config.saveConfig({settings: defaults});
-    setLocal({...defaults});
-  }
-
-  // Build sections dynamically from `SETTINGS` categories.
-  const CATEGORY_ORDER = ['audio','controls','gameplay','accessibility','online','general'];
-  const foundCategories = Array.from(new Set(SETTINGS.map(s => s.category || 'general')));
-  const orderedCategories = CATEGORY_ORDER.filter(c => foundCategories.includes(c)).concat(foundCategories.filter(c => !CATEGORY_ORDER.includes(c)));
-  const SECTIONS: { id: string; label: string; items: string[] }[] = orderedCategories.map(cat => ({ id: cat, label: '', items: SETTINGS.filter(s => (s.category || 'general') === cat).map(s => s.id) }));
-
-  // default selected section: first category
   React.useEffect(()=>{
-    if(!section && SECTIONS.length){ setSection(SECTIONS[0].id); }
-  },[SECTIONS, section]);
+    if(!savedKeyboardEnabled) return;
+    function idxOf(el: Element | null, arr: Array<Element | null>){
+      if(!el) return -1;
+      // try direct match first
+      const direct = arr.findIndex(a => a === el);
+      if(direct >= 0) return direct;
+      // fallback: find the first element in arr that contains the active element
+      return arr.findIndex(a => a && a.contains(el));
+    }
 
-  function localLabel(key: string, fallback: string){
-    const val = t(key);
-    return (!val || val === key) ? fallback : val;
-  }
+    function handleKey(e: KeyboardEvent){
+      const k = e.key.toLowerCase();
+      // determine which keys are active based on controlScheme in local edits (user-facing)
+      const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+      const leftKey = scheme === 'wasd' ? 'a' : 'arrowleft';
+      const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
+      const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
+      const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
+      if(![leftKey, rightKey, upKey, downKey].includes(k)) return;
+      const active = document.activeElement as Element | null;
+      // build left column list: nav items then left buttons
+      const leftList: Array<HTMLElement | null> = [];
+      navRefs.current.forEach(n=> leftList.push(n));
+      leftButtonRefs.current.forEach(b=> leftList.push(b));
+
+      const rightList = btnRefs.current as Array<HTMLElement | null>;
+
+      const leftIdx = idxOf(active, leftList as any);
+      const rightIdx = idxOf(active, rightList as any);
+
+      // up/down within current column (prefer containment check)
+      if(k === upKey){
+        e.preventDefault();
+        if(leftIdx >= 0){ const next = Math.max(0, leftIdx - 1); leftList[next]?.focus(); }
+        else if(rightIdx >= 0){ const next = Math.max(0, rightIdx - 1); rightList[next]?.focus(); }
+        return;
+      }
+      if(k === downKey){
+        e.preventDefault();
+        if(leftIdx >= 0){ const next = Math.min(leftList.length - 1, leftIdx + 1); leftList[next]?.focus(); }
+        else if(rightIdx >= 0){ const next = Math.min(rightList.length - 1, rightIdx + 1); rightList[next]?.focus(); }
+        return;
+      }
+
+      // horizontal: move between columns keeping index
+      if(k === rightKey){
+        e.preventDefault();
+        if(leftIdx >= 0){ const target = Math.min(rightList.length - 1, leftIdx); rightList[target]?.focus(); }
+        else if(rightIdx >= 0){ /* already right side */ }
+        return;
+      }
+      if(k === leftKey){
+        e.preventDefault();
+        if(rightIdx >= 0){ const target = Math.min(navRefs.current.length - 1, rightIdx); navRefs.current[target]?.focus(); }
+        else if(leftIdx >= 0){ /* already left side */ }
+        return;
+      }
+    }
+
+    window.addEventListener('keydown', handleKey);
+    return ()=> window.removeEventListener('keydown', handleKey);
+  }, [savedKeyboardEnabled, navRefs, leftButtonRefs, btnRefs, local.controlScheme]);
+
+  const SECTIONS = React.useMemo(() => {
+    const cats = Array.from(new Set(SETTINGS.map(s => s.category).filter(Boolean)));
+    const base = [{ id: 'all', items: SETTINGS.map(s => s.id) }];
+    const rest = cats.map(c => ({ id: c, items: SETTINGS.filter(s => s.category === c).map(s => s.id) }));
+    return [...base, ...rest];
+  }, []);
 
   const withLabels = SECTIONS.map(s => ({ ...s, label: (
     // prefer explicit translation key if present, otherwise humanize the id
@@ -115,12 +131,6 @@ export default function Settings({onBack}:{onBack:()=>void}){
   // local contains unsaved edits; saved* hold persisted values until Apply is pressed
   // const keyboardEnabled = local.keyboardNavigation !== false;
   // const mouseEnabled = local.mouseNavigation !== false;
-  const [savedKeyboardEnabled, setSavedKeyboardEnabled] = React.useState<boolean>(()=>{
-    try{ return config.loadConfig().settings?.keyboardNavigation !== false; }catch(e){ return true; }
-  });
-  const [savedMouseEnabled, setSavedMouseEnabled] = React.useState<boolean>(()=>{
-    try{ return config.loadConfig().settings?.mouseNavigation !== false; }catch(e){ return true; }
-  });
   const visibleSettingsCount = visibleSettings.length;
 
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
@@ -174,69 +184,47 @@ export default function Settings({onBack}:{onBack:()=>void}){
     try{ return JSON.stringify(local || {}) !== JSON.stringify(savedSettings || {}); }catch(e){ return false; }
   },[local, savedSettings]);
 
-  // Global keyboard handler to switch focus between left column (nav + left buttons)
-  // and right column (settings rows) using arrow keys or WASD.
-  React.useEffect(()=>{
-    if(!savedKeyboardEnabled) return;
-    function idxOf(el: Element | null, arr: Array<Element | null>){
-      if(!el) return -1;
-      // try direct match first
-      const direct = arr.findIndex(a => a === el);
-      if(direct >= 0) return direct;
-      // fallback: find the first element in arr that contains the active element
-      return arr.findIndex(a => a && a.contains(el));
+  function handleApply(){
+    try{
+      config.saveConfig({settings: local as any});
+      setSavedSettings(local);
+      setSavedKeyboardEnabled(local.keyboardNavigation !== false);
+      setSavedMouseEnabled(local.mouseNavigation !== false);
+      // notify listeners that config changed and was applied
+      window.dispatchEvent(new CustomEvent('pacman.config.changed', { detail: { settings: local } }));
+      window.dispatchEvent(new CustomEvent('pacman.config.applied', { detail: { settings: local } }));
+      try{ toast.show({ title: t('settings_saved') || 'Saved', message: t('settings_saved_message') || '', type: 'success' }); }catch(e){}
+    }catch(e){
+      console.error(e);
+      try{ toast.show({ title: t('settings_save_failed') || 'Save failed', message: '', type: 'error' }); }catch(e){}
     }
+  }
 
-    function handleKey(e: KeyboardEvent){
-      const k = e.key.toLowerCase();
-      if(!['arrowleft','arrowright','arrowup','arrowdown','a','d','w','s'].includes(k)) return;
-      const active = document.activeElement as Element | null;
-      // build left column list: nav items then left buttons
-      const leftList: Array<HTMLElement | null> = [];
-      navRefs.current.forEach(n=> leftList.push(n));
-      leftButtonRefs.current.forEach(b=> leftList.push(b));
+  function handleReset(){
+    // restore persisted settings (discard local changes)
+    setLocal(savedSettings || {});
+  }
 
-      const rightList = btnRefs.current as Array<HTMLElement | null>;
+  function renderControl(s: SettingMeta){
+    const val = (local && typeof local[s.id] !== 'undefined') ? local[s.id] : (savedSettings && typeof savedSettings[s.id] !== 'undefined' ? savedSettings[s.id] : (DEFAULT_CONFIG.settings as any)[s.id]);
+    const disabled = s.implemented === false;
+    const saved = savedKey === s.id || (typeof savedSettings[s.id] !== 'undefined' && savedSettings[s.id] === val);
 
-      // determine which column currently contains focus using container refs
-      const inLeft = leftColumnRef.current ? leftColumnRef.current.contains(active) : false;
-      const inRight = rightColumnRef.current ? rightColumnRef.current.contains(active) : false;
-
-      const leftIdx = idxOf(active, leftList as any);
-      const rightIdx = idxOf(active, rightList as any);
-
-      // up/down within current column (prefer containment check)
-      if(k === 'arrowup' || k === 'w'){
-        e.preventDefault();
-        if(inLeft){ const next = Math.max(0, leftIdx - 1); leftList[next]?.focus(); }
-        else if(inRight){ const next = Math.max(0, rightIdx - 1); rightList[next]?.focus(); }
-        return;
-      }
-      if(k === 'arrowdown' || k === 's'){
-        e.preventDefault();
-        if(inLeft){ const next = Math.min(leftList.length - 1, leftIdx + 1); leftList[next]?.focus(); }
-        else if(inRight){ const next = Math.min(rightList.length - 1, rightIdx + 1); rightList[next]?.focus(); }
-        return;
-      }
-
-      // horizontal: move between columns keeping index
-      if(k === 'arrowright' || k === 'd'){
-        e.preventDefault();
-        if(leftIdx >= 0){ const target = Math.min(rightList.length - 1, leftIdx); rightList[target]?.focus(); }
-        else if(rightIdx >= 0){ /* already right side */ }
-        return;
-      }
-      if(k === 'arrowleft' || k === 'a'){
-        e.preventDefault();
-        if(rightIdx >= 0){ const target = Math.min(navRefs.current.length - 1, rightIdx); navRefs.current[target]?.focus(); }
-        else if(leftIdx >= 0){ /* already left side */ }
-        return;
-      }
+    switch(s.type){
+      case 'toggle':
+        return <Toggle checked={!!val} onChange={(v)=>update(s.id, v)} disabled={disabled} saved={saved} label={null} />;
+      case 'select':
+        return <Select value={String(val || '')} onChange={(v)=>update(s.id, v)} options={(s.options||[])} disabled={disabled} saved={saved} />;
+      case 'range':
+        return <Range value={Number(val||0)} onChange={(n)=>update(s.id, n)} min={0} max={100} step={1} disabled={disabled} saved={saved} />;
+      case 'number':
+        return <NumberInput value={Number(val||0)} onChange={(n)=>update(s.id, n)} disabled={disabled} saved={saved} />;
+      default:
+        return null;
     }
+  }
 
-    window.addEventListener('keydown', handleKey);
-    return ()=> window.removeEventListener('keydown', handleKey);
-  }, [savedKeyboardEnabled, navRefs, leftButtonRefs, btnRefs, visibleSettingsCount]);
+  // NOTE: global keyboard handling is managed by the other effect above
 
   return (
     <Layout title={t('settings_title')} subtitle={t('settings_subtitle')} sticky>
