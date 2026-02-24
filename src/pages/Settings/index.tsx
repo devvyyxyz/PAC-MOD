@@ -296,6 +296,19 @@ export default function Settings({onBack}:{onBack:()=>void}){
       if(!root) return;
       const ctrl = root.querySelector('input, select, button, [tabindex]:not([tabindex="-1"])') as HTMLElement | null;
       if(!ctrl) return;
+      // If the matched element is an inner button (e.g. our custom NumberInput
+      // increment/decrement button), prefer focusing a containing control wrapper
+      // such as a spinbutton (role) or any ancestor with a tabindex so the
+      // control's own keyboard handlers run and global navigation is suppressed.
+      let focusTarget = ctrl as HTMLElement;
+      try{
+        const spin = (ctrl as HTMLElement).closest('[role="spinbutton"]') as HTMLElement | null;
+        if(spin) focusTarget = spin;
+        else if(focusTarget.tagName === 'BUTTON'){
+          const ancTab = (focusTarget as HTMLElement).closest('[tabindex]:not([tabindex="-1"])') as HTMLElement | null;
+          if(ancTab) focusTarget = ancTab;
+        }
+      }catch(e){}
       try{
         // toggle checkboxes directly
         if(ctrl.tagName === 'INPUT' && (ctrl as HTMLInputElement).type === 'checkbox'){
@@ -304,10 +317,12 @@ export default function Settings({onBack}:{onBack:()=>void}){
           setTimeout(()=>{ try{ safeFocus(root); }catch(e){} }, 0);
           return;
         }
-        // otherwise focus the control so native keys work (space, arrows)
-        safeFocus(ctrl);
+        // otherwise focus the control (prefer wrapper) so native keys work
+        // (space, arrows) and our auxiliary handlers can be attached to the
+        // appropriate element.
+        safeFocus(focusTarget);
         // attach auxiliary key handlers so WASD maps to native arrow actions
-        try{ attachControlInteraction(root as HTMLElement, ctrl); }catch(e){}
+        try{ attachControlInteraction(root as HTMLElement, focusTarget); }catch(e){}
       }catch(e){}
     }
   });
