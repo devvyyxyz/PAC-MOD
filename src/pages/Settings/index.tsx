@@ -63,6 +63,24 @@ export default function Settings({onBack}:{onBack:()=>void}){
     }catch(e){
       try{ (el as HTMLElement).focus(); }catch(e){}
     }
+    // after focusing, ensure the element is visible inside its container
+    try{ ensureVisibleAfterFocus(el); }catch(e){}
+  }
+
+  // ensure focused element is visible inside its scroll container
+  function ensureVisibleAfterFocus(el?: Element | null){
+    if(!el) return;
+    try{
+      // defer to allow browser focus state to settle
+      setTimeout(()=>{
+        const node = el as HTMLElement;
+        if(leftColumnRef.current && leftColumnRef.current.contains(node)){
+          ensureLeftVisible(node);
+        }else if(rightColumnRef.current && rightColumnRef.current.contains(node)){
+          ensureRightVisible(node);
+        }
+      }, 0);
+    }catch(e){}
   }
 
   React.useEffect(()=>{
@@ -170,15 +188,19 @@ export default function Settings({onBack}:{onBack:()=>void}){
     try{
       const container = leftColumnRef.current;
       if(!container || !el) return;
-      const containerRect = container.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      // amount to scroll so the element is centered inside the container
-      const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
-      let target = Math.round(container.scrollTop + offset);
-      // clamp target to valid range
-      target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
-      // perform instant scroll (avoid smooth animation which can hide the title)
-      try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
+      // use native scrollIntoView on the element which scrolls the nearest
+      // scrollable ancestor (our container) and center it inside that box
+      try{
+        el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+      }catch(e){
+        // fallback to manual clamped scroll
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
+        let target = Math.round(container.scrollTop + offset);
+        target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
+        try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
+      }
     }catch(e){}
   }
 
@@ -187,14 +209,36 @@ export default function Settings({onBack}:{onBack:()=>void}){
     try{
       const container = rightColumnRef.current;
       if(!container || !el) return;
-      const containerRect = container.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
-      let target = Math.round(container.scrollTop + offset);
-      target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
-      try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
+      try{
+        el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+      }catch(e){
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
+        let target = Math.round(container.scrollTop + offset);
+        target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
+        try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
+      }
     }catch(e){}
   }
+
+  // Ensure programmatic focus (which may use preventScroll) still brings
+  // the focused element into view. Listen for focusin which bubbles.
+  React.useEffect(()=>{
+    function onFocusIn(e: FocusEvent){
+      try{
+        const target = e.target as HTMLElement | null;
+        if(!target) return;
+        if(leftColumnRef.current && leftColumnRef.current.contains(target)){
+          ensureLeftVisible(target);
+        }else if(rightColumnRef.current && rightColumnRef.current.contains(target)){
+          ensureRightVisible(target);
+        }
+      }catch(e){}
+    }
+    document.addEventListener('focusin', onFocusIn);
+    return ()=> document.removeEventListener('focusin', onFocusIn);
+  },[]);
 
   const withLabels = SECTIONS.map(s => ({ ...s, label: (
     // prefer explicit translation key if present, otherwise humanize the id

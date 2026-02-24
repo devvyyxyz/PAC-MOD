@@ -57,12 +57,16 @@ export default function Credits({onBack}:{onBack:()=>void}){
     try{
       const container = stageRef.current;
       if(!container || !el) return;
-      const containerRect = container.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
-      let target = Math.round(container.scrollTop + offset);
-      target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
-      try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
+      try{
+        el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+      }catch(e){
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
+        let target = Math.round(container.scrollTop + offset);
+        target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
+        try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
+      }
     }catch(e){}
   }
 
