@@ -3,7 +3,7 @@ import menuStyles from '../../components/Menu/Menu.module.css';
 import Button from '../../components/Button';
 import styles from './Credits.module.css';
 import CREDITS from '../../config/credits';
-import { useI18n, Grid } from '../../components';
+import { useI18n, Grid, Icon } from '../../components';
 import Title from '../../components/Title';
 import config from '../../config';
 import { useKeyboardNavigation } from '../../hooks';
@@ -139,7 +139,13 @@ export default function Credits({onBack}:{onBack:()=>void}){
                 <div>
                   <div className={styles.cardHeader}>
                     <div className={styles.cardIcon} aria-hidden>
-                      {c.icon ? <img src={c.icon} alt="" style={{width:28,height:28}}/> : <img src="/assets/icons/circle.svg" alt="" style={{width:20,height:20}} />}
+                      {c.icon ? (
+                        (c.icon.startsWith('http') || c.icon.startsWith('/')) ?
+                          <img src={c.icon} alt="" style={{width:28,height:28}} /> :
+                          <Icon name={c.icon as any} size={28} />
+                      ) : (
+                        <Icon name="circle" size={20} />
+                      )}
                     </div>
                     <div>
                       <h4 className={styles.cardTitle}>{c.name}</h4>

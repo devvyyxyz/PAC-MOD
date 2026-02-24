@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Icon.module.css';
 import ICONS from '../../config/icons';
+import ASSETS from '../../config/assets';
 
 type IconName = keyof typeof ICONS;
 
@@ -8,8 +9,8 @@ const svgCache = new Map<string,string>();
 
 export default function Icon({ name, size = 20, className = '', title, onClick }: { name: IconName; size?: number; className?: string; title?: string; onClick?: () => void }){
   const cls = `${styles.icon} icon ${onClick ? styles.clickable : ''} ${className}`.trim();
-  const cfg = (ICONS as any)[name] || { src: `/assets/icons/${name}.svg` };
-  const src = cfg.src || `/assets/icons/${name}.svg`;
+  const cfg = (ICONS as any)[name] || { src: `${ASSETS.icons}/${name}.svg` };
+  const src = cfg.src || `${ASSETS.icons}/${name}.svg`;
   const style: React.CSSProperties = {};
   // expose colors as CSS variables so hover styles in parent can override them
   if(cfg.color) (style as any)['--icon-color'] = cfg.color;

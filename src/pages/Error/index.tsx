@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { sendCrashReport } from '../../utils/report';
-import { useI18n, useToast } from '../../components';
+import { useI18n, useToast, Icon } from '../../components';
 import menuStyles from '../../components/Menu/Menu.module.css';
 import Button from '../../components/Button';
 import styles from './Error.module.css';
@@ -54,7 +54,7 @@ export default function ErrorPage({error, info, onBack}:{error:Error, info?:Reac
     <div className={styles.wrap}>
       <div className={styles.stage} role="main">
         <div className={styles.icon} aria-hidden>
-          <img src="/assets/icons/skull.svg" alt="" width="48" height="48" aria-hidden style={{display:'block'}} />
+          <Icon name="skull" size={48} />
         </div>
         <h2 className={styles.title}>{t('error_title')}</h2>
         <div className={styles.message}>{t('error_message')}</div>
