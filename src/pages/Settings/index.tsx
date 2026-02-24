@@ -45,7 +45,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
   // Centralized helper to compute navigation keys for a given control scheme
   function navKeys(scheme?: 'arrow'|'wasd'){
-    const s = scheme || (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+    const s = scheme || (savedSettings && (savedSettings.controlScheme as 'arrow'|'wasd')) || 'arrow';
     return {
       left: s === 'wasd' ? 'a' : 'arrowleft',
       right: s === 'wasd' ? 'd' : 'arrowright',
@@ -158,7 +158,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
     window.addEventListener('keydown', handleKey);
     return ()=> window.removeEventListener('keydown', handleKey);
-  }, [savedKeyboardEnabled, navRefs, leftButtonRefs, btnRefs, local.controlScheme]);
+  }, [savedKeyboardEnabled, navRefs, leftButtonRefs, btnRefs, effectiveControlScheme]);
 
   const SECTIONS = React.useMemo(() => {
     const cats = Array.from(new Set(SETTINGS.map(s => s.category).filter(Boolean)));
@@ -271,15 +271,16 @@ export default function Settings({onBack}:{onBack:()=>void}){
   // const mouseEnabled = local.mouseNavigation !== false;
   const visibleSettingsCount = visibleSettings.length;
 
-  // determine effective control scheme: prefer local staged edit, else persisted config, else default to 'arrow'
+  // determine effective control scheme: use the persisted (saved) value so
+  // changing the staged setting does not immediately alter navigation keys
+  // until the user presses Apply.
   const effectiveControlScheme = React.useMemo(() => {
     try{
-      const persisted = (config.loadConfig().settings as any)?.controlScheme as 'arrow'|'wasd' | undefined;
-      return (typeof local.controlScheme !== 'undefined' ? (local.controlScheme as 'arrow'|'wasd') : persisted) || 'arrow';
+      return (savedSettings && (savedSettings.controlScheme as 'arrow'|'wasd')) || ((config.loadConfig().settings as any)?.controlScheme) || 'arrow';
     }catch(e){
-      return (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+      return (savedSettings && (savedSettings.controlScheme as 'arrow'|'wasd')) || 'arrow';
     }
-  }, [local.controlScheme]);
+  }, [savedSettings]);
 
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
     length: visibleSettingsCount,
