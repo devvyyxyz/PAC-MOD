@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Controls.module.css';
 import { useI18n } from '..';
+import Icon from '../Icon/Icon';
 
 type Props = {
   value: string;
@@ -18,7 +19,7 @@ export default function Select({value,onChange,options,disabled,saved}:Props){
         <select className={styles.select} value={value} onChange={(e)=>onChange(e.target.value)} disabled={disabled}>
           {options.map(o=> <option key={o} value={o}>{t(o)}</option>)}
         </select>
-        <img className={styles.chevron} src="/assets/icons/chevron.svg" alt="" aria-hidden />
+        <Icon name="chevron" className={styles.chevron} size={18} aria-hidden={true} />
       </div>
       {saved ? <div className={styles.saved}>{t('settings_saved') || 'Saved'}</div> : null}
     </div>

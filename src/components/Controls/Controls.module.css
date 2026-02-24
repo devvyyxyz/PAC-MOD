@@ -24,8 +24,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance: none; margi
 .numCtrl:focus{outline:3px solid rgba(255,208,90,0.12);outline-offset:3px}
 .selectWrap{position:relative;display:inline-block}
 .select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:40px;min-width:140px;padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
-.chevron{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;display:inline-block;object-fit:contain;color:var(--accent);pointer-events:none;filter:sepia(1) saturate(6) hue-rotate(8deg) brightness(0.95)}
-.select:focus + .chevron{filter:none}
+.chevron{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;display:inline-block;object-fit:contain;color:var(--accent);pointer-events:none}
 .select:focus{outline:3px solid rgba(255,208,90,0.12);outline-offset:3px}
 .select[disabled]{opacity:0.5;pointer-events:none}
 .range{width:160px;appearance:none;height:6px;border-radius:6px;background:linear-gradient(90deg,#ffd84d 0%, #ffd84d 50%, rgba(255,255,255,0.08) 50%);outline:none}

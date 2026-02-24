@@ -7,7 +7,7 @@ const ICONS: Record<string, { src: string; color?: string }> = {
   coin: { src: '/assets/icons/coin.svg', color: 'var(--accent)' },
   ghost: { src: '/assets/icons/ghost.svg', color: 'var(--accent)' },
   skull: { src: '/assets/icons/skull.svg', color: 'var(--accent)' },
-  chevron: { src: '/assets/icons/chevron.svg', color: 'currentColor' },
+  chevron: { src: '/assets/icons/chevron.svg', color: 'var(--accent)' },
   circle: { src: '/assets/icons/circle.svg', color: 'var(--accent)' },
   check: { src: '/assets/icons/check.svg', color: 'currentColor' },
   refresh: { src: '/assets/icons/refresh.svg', color: 'currentColor' },
