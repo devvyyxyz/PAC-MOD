@@ -11,7 +11,7 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   sfx?: string | null;
 };
 
-const Button = React.forwardRef<HTMLButtonElement, Props>(function Button({variant='secondary', full=false, className, children, icon, sfx='uiClick', onClick, ...rest}: Props, ref){
+const Button = React.forwardRef<HTMLButtonElement, Props>(function Button({variant='secondary', full=false, className, children, icon, sfx='uiClick', onClick, onMouseEnter, ...rest}: Props, ref){
   const cls = [
     styles.btn,
     className || '',
@@ -25,8 +25,13 @@ const Button = React.forwardRef<HTMLButtonElement, Props>(function Button({varia
     try{ onClick && onClick(e); }catch(e){}
   }
 
+  function handleMouseEnter(e: React.MouseEvent<HTMLButtonElement>){
+    try{ playSfx('uiHover'); }catch(e){}
+    try{ onMouseEnter && onMouseEnter(e); }catch(e){}
+  }
+
   return (
-    <button ref={ref} className={cls} onClick={handleClick} {...rest}>
+    <button ref={ref} className={cls} onClick={handleClick} onMouseEnter={handleMouseEnter} {...rest}>
       {icon ? <span className={styles.iconWrap}><Icon name={icon as any} size={18} /></span> : null}
       {children}
     </button>

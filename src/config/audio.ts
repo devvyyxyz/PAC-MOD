@@ -15,8 +15,9 @@ const AUDIO: Record<string, AudioEntry> = {
   },
   sfxChomp: { src: '/assets/audio/GameSFX/Blops/Retro Blop 18.wav', defaultVolume: 1 },
   uiClick: { src: '/assets/audio/GameSFX/Blops/Retro Blop 18.wav', defaultVolume: 1 },
-  uiSend: { src: '/assets/audio/GameSFX/Events/Retro Event UI 13.wav', defaultVolume: 1 },
-  uiCopy: { src: '/assets/audio/GameSFX/Events/Retro Event UI 15.wav', defaultVolume: 1 }
+  uiHover: { src: '/assets/audio/GameSFX/Blops/Retro Blop 07.wav', defaultVolume: 0.9 },
+  uiSend: { src: '/assets/audio/GameSFX/Blops/Retro Blop StereoUP 09.wav', defaultVolume: 1 },
+  uiCopy: { src: '/assets/audio/GameSFX/Blops/Retro Blop StereoUP 09.wav', defaultVolume: 1 }
 };
 
 export default AUDIO;

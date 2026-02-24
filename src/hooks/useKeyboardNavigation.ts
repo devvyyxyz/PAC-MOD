@@ -1,4 +1,5 @@
 import { useEffect, useState, MutableRefObject, useRef } from 'react';
+import { playSfx } from '../utils/audio';
 
 type Scheme = 'arrow' | 'wasd';
 
@@ -36,7 +37,13 @@ export function useKeyboardNavigation(opts: {
         if(i === focusIndex) b.setAttribute('data-focused', 'true'); else b.removeAttribute('data-focused');
       });
     }catch(e){}
-  },[focusIndex, btnRefs]);
+    // Play hover sound when focus moves via keyboard
+    try{
+      if(activeInput === 'keyboard'){
+        try{ playSfx('uiHover'); }catch(e){}
+      }
+    }catch(e){}
+  },[focusIndex, btnRefs, activeInput]);
 
   useEffect(()=>{
     function handleKey(e: KeyboardEvent){
