@@ -9,10 +9,10 @@ type Props = {
   controlScheme?: 'arrow'|'wasd';
 };
 
-export default function NumberInput({value,onChange,disabled,saved}:Props){
+export default function NumberInput({value,onChange,disabled,saved,controlScheme='arrow'}:Props){
   const min = 0;
   const max = 99;
-  const scheme = (arguments[0] as any)?.controlScheme || 'arrow';
+  const scheme = controlScheme || 'arrow';
 
   function dec(){ if(disabled) return; const next = Math.max(min, Number(value) - 1); onChange(next); }
   function inc(){ if(disabled) return; const next = Math.min(max, Number(value) + 1); onChange(next); }

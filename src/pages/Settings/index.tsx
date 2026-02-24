@@ -485,7 +485,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
       case 'range':
         return <Range value={Number(val||0)} onChange={(n)=>update(s.id, n)} min={0} max={100} step={1} disabled={disabled} saved={saved} />;
       case 'number':
-        return <NumberInput value={Number(val||0)} onChange={(n)=>update(s.id, n)} disabled={disabled} saved={saved} />;
+        return <NumberInput value={Number(val||0)} onChange={(n)=>update(s.id, n)} disabled={disabled} saved={saved} controlScheme={effectiveControlScheme} />;
       default:
         return null;
     }
