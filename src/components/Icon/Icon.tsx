@@ -12,6 +12,7 @@ export default function Icon({ name, size = 20, className = '', title, onClick }
   const src = cfg.src || `/assets/icons/${name}.svg`;
   const style: React.CSSProperties = {};
   if(cfg.color) style.color = cfg.color;
+  if((cfg as any).hoverColor) (style as any)['--icon-hover-color'] = (cfg as any).hoverColor;
 
   const [svg, setSvg] = React.useState<string | null>(() => svgCache.get(src) || null);
 
