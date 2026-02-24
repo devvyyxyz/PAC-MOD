@@ -358,8 +358,9 @@ export default function Settings({onBack}:{onBack:()=>void}){
           if(len === 0) return;
           let idx = sel.selectedIndex;
           idx += (k === keys.down ? 1 : -1);
-          // if computed index is out-of-range, jump to top (0)
-          if(idx < 0 || idx >= len) idx = 0;
+          // wrap-around: up from first -> last, down from last -> first
+          if(idx < 0) idx = len - 1;
+          else if(idx >= len) idx = 0;
           if(idx !== sel.selectedIndex){
             try{ const sid = row?.getAttribute('data-setting-id'); if(sid) update(sid, sel.options[idx].value); }catch(_){ }
           }
