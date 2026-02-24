@@ -37,4 +37,38 @@ const SETTINGS: SettingMeta[] = [
   { id: 'advancedGraphics', labelKey: 'setting_advancedGraphics', category: 'display', type: 'toggle', implemented: false, description: 'Advanced rendering features (coming soon)' }
 ];
 
+// Additional proposed settings (kept unimplemented for now)
+SETTINGS.push(
+  { id: 'vsync', labelKey: 'setting_vsync', category: 'display', type: 'toggle', implemented: false, description: 'Enable vertical sync (coming soon)' },
+  { id: 'resolution', labelKey: 'setting_resolution', category: 'display', type: 'select', implemented: false, options: ['800x600','1024x768','1280x720','1920x1080'], description: 'Render resolution (coming soon)' },
+  { id: 'fpsCap', labelKey: 'setting_fpsCap', category: 'display', type: 'number', implemented: false, description: 'Cap the framerate (coming soon)' },
+  { id: 'textureQuality', labelKey: 'setting_textureQuality', category: 'display', type: 'select', implemented: false, options: ['low','medium','high'], description: 'Texture quality (coming soon)' },
+  { id: 'shadowQuality', labelKey: 'setting_shadowQuality', category: 'display', type: 'select', implemented: false, options: ['off','low','high'], description: 'Shadow quality (coming soon)' },
+  { id: 'bloom', labelKey: 'setting_bloom', category: 'display', type: 'toggle', implemented: false, description: 'Bloom post-processing (coming soon)' },
+  { id: 'particleDensity', labelKey: 'setting_particleDensity', category: 'display', type: 'range', implemented: false, description: 'Particle density (coming soon)' },
+  { id: 'showHitboxes', labelKey: 'setting_showHitboxes', category: 'developer', type: 'toggle', implemented: false, description: 'Render hitboxes for debugging (coming soon)' },
+  { id: 'autoRestart', labelKey: 'setting_autoRestart', category: 'gameplay', type: 'toggle', implemented: false, description: 'Auto-restart level on failure (coming soon)' },
+  { id: 'autoSave', labelKey: 'setting_autoSave', category: 'general', type: 'toggle', implemented: false, description: 'Automatically save progress (coming soon)' },
+  { id: 'saveInterval', labelKey: 'setting_saveInterval', category: 'general', type: 'number', implemented: false, description: 'Auto-save interval in minutes (coming soon)' },
+  { id: 'notifications', labelKey: 'setting_notifications', category: 'general', type: 'toggle', implemented: false, description: 'Show in-game notifications (coming soon)' },
+  { id: 'voiceChat', labelKey: 'setting_voiceChat', category: 'online', type: 'toggle', implemented: false, description: 'Enable voice chat (coming soon)' },
+  { id: 'networkMode', labelKey: 'setting_networkMode', category: 'online', type: 'select', implemented: false, options: ['offline','online'], description: 'Network mode (coming soon)' },
+  { id: 'matchmakingRegion', labelKey: 'setting_matchmakingRegion', category: 'online', type: 'select', implemented: false, options: ['auto','eu','na','asia'], description: 'Matchmaking region (coming soon)' },
+  { id: 'subtitles', labelKey: 'setting_subtitles', category: 'accessibility', type: 'toggle', implemented: false, description: 'Show subtitles for game messages (coming soon)' },
+  { id: 'uiAnimations', labelKey: 'setting_uiAnimations', category: 'general', type: 'toggle', implemented: false, description: 'Enable UI animations (coming soon)' },
+  { id: 'logLevel', labelKey: 'setting_logLevel', category: 'developer', type: 'select', implemented: false, options: ['info','warn','error','debug'], description: 'Logging verbosity (coming soon)' },
+  { id: 'developerMode', labelKey: 'setting_developerMode', category: 'developer', type: 'toggle', implemented: false, description: 'Enable developer features (coming soon)' },
+  { id: 'experimentalFeatures', labelKey: 'setting_experimentalFeatures', category: 'general', type: 'toggle', implemented: false, description: 'Enable experimental features (coming soon)' },
+  { id: 'physicsAccuracy', labelKey: 'setting_physicsAccuracy', category: 'gameplay', type: 'select', implemented: false, options: ['low','normal','high'], description: 'Physics simulation accuracy (coming soon)' },
+  { id: 'adaptiveDifficulty', labelKey: 'setting_adaptiveDifficulty', category: 'gameplay', type: 'toggle', implemented: false, description: 'Adaptive difficulty (coming soon)' },
+  { id: 'assistMode', labelKey: 'setting_assistMode', category: 'accessibility', type: 'select', implemented: false, options: ['off','partial','full'], description: 'Assist features for accessibility (coming soon)' },
+  { id: 'tutorialHints', labelKey: 'setting_tutorialHints', category: 'general', type: 'toggle', implemented: false, description: 'Show tutorial hints (coming soon)' },
+  { id: 'controllerLayout', labelKey: 'setting_controllerLayout', category: 'controls', type: 'select', implemented: false, options: ['auto','xbox','ps','nintendo'], description: 'Preferred controller layout (coming soon)' },
+  { id: 'touchControls', labelKey: 'setting_touchControls', category: 'controls', type: 'toggle', implemented: false, description: 'Enable touch-friendly controls (coming soon)' },
+  { id: 'vibrationIntensity', labelKey: 'setting_vibrationIntensity', category: 'controls', type: 'range', implemented: false, description: 'Controller vibration intensity (coming soon)' },
+  { id: 'brightness', labelKey: 'setting_brightness', category: 'display', type: 'range', implemented: false, description: 'Screen brightness (coming soon)' },
+  { id: 'contrast', labelKey: 'setting_contrast', category: 'display', type: 'range', implemented: false, description: 'Screen contrast (coming soon)' },
+  { id: 'gamma', labelKey: 'setting_gamma', category: 'display', type: 'range', implemented: false, description: 'Gamma correction (coming soon)' }
+);
+
 export default SETTINGS;
