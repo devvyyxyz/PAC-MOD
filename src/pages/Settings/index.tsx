@@ -43,6 +43,17 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
   }
 
+  // Centralized helper to compute navigation keys for a given control scheme
+  function navKeys(scheme?: 'arrow'|'wasd'){
+    const s = scheme || (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+    return {
+      left: s === 'wasd' ? 'a' : 'arrowleft',
+      right: s === 'wasd' ? 'd' : 'arrowright',
+      up: s === 'wasd' ? 'w' : 'arrowup',
+      down: s === 'wasd' ? 's' : 'arrowdown'
+    } as const;
+  }
+
   React.useEffect(()=>{
     if(!savedKeyboardEnabled) return;
     function idxOf(el: Element | null, arr: Array<Element | null>){
@@ -57,12 +68,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
     function handleKey(e: KeyboardEvent){
       const k = e.key.toLowerCase();
       // determine which keys are active based on controlScheme in local edits (user-facing)
-      const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
-      const leftKey = scheme === 'wasd' ? 'a' : 'arrowleft';
-      const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
-      const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
-      const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
-      if(![leftKey, rightKey, upKey, downKey].includes(k)) return;
+      const keys = navKeys(local.controlScheme);
+      if(![keys.left, keys.right, keys.up, keys.down].includes(k)) return;
       const active = document.activeElement as Element | null;
       // If focus is inside a native form control, let native keys operate there
       if(active && (active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)){
@@ -79,13 +86,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
       const rightIdx = idxOf(active, rightList as any);
 
       // up/down within current column (prefer containment check)
-      if(k === upKey){
+      if(k === keys.up){
         e.preventDefault();
         if(leftIdx >= 0){ const next = Math.max(0, leftIdx - 1); leftList[next]?.focus(); }
         else if(rightIdx >= 0){ const next = Math.max(0, rightIdx - 1); rightList[next]?.focus(); }
         return;
       }
-      if(k === downKey){
+      if(k === keys.down){
         e.preventDefault();
         if(leftIdx >= 0){ const next = Math.min(leftList.length - 1, leftIdx + 1); leftList[next]?.focus(); }
         else if(rightIdx >= 0){ const next = Math.min(rightList.length - 1, rightIdx + 1); rightList[next]?.focus(); }
@@ -93,13 +100,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
       }
 
       // horizontal: move between columns keeping index
-      if(k === rightKey){
+      if(k === keys.right){
         e.preventDefault();
         if(leftIdx >= 0){ const target = Math.min(rightList.length - 1, leftIdx); rightList[target]?.focus(); }
         else if(rightIdx >= 0){ /* already right side */ }
         return;
       }
-      if(k === leftKey){
+      if(k === keys.left){
         e.preventDefault();
         if(rightIdx >= 0){ const target = Math.min(navRefs.current.length - 1, rightIdx); navRefs.current[target]?.focus(); }
         else if(leftIdx >= 0){ /* already left side */ }
@@ -357,31 +364,28 @@ export default function Settings({onBack}:{onBack:()=>void}){
                         ref={(el)=>{ navRefs.current[secIndex] = el; }}
                         onKeyDown={(e)=>{
                           const k = e.key.toLowerCase();
-                          const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
-                          const leftKey = scheme === 'wasd' ? 'a' : 'arrowleft';
-                          const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
-                          const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
-                          const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
+                          const keys = navKeys(local.controlScheme);
                           if(k === 'enter' || k === ' '){ e.preventDefault(); e.stopPropagation(); setSection(sec.id); }
-                          if(k === rightKey){
+                          if(k === keys.right){
                             e.preventDefault(); e.stopPropagation();
                             // focus first setting row
                             const first = btnRefs.current[0] as HTMLElement | null | undefined;
                             if(first) { try{ first.focus(); }catch{} }
                           }
-                          if(k === leftKey){
+                          if(k === keys.left){
                             e.preventDefault(); e.stopPropagation();
                             // focus first left button (Apply)
                             const lb = leftButtonRefs.current[0] as HTMLElement | null | undefined;
                             if(lb) try{ lb.focus(); }catch{}
                           }
-                          if(k === upKey || k === downKey){
-                            // move between nav items
+                          if(k === keys.up || k === keys.down){
+                            // move between nav items and left action buttons (wrap across both)
                             e.preventDefault(); e.stopPropagation();
-                            const dir = k === upKey ? -1 : 1;
-                            const next = (secIndex + dir + withLabels.length) % withLabels.length;
-                            const el = navRefs.current[next];
-                            if(el) try{ el.focus(); }catch{}
+                            const arr = [...navRefs.current, ...leftButtonRefs.current];
+                            const dir = k === keys.up ? -1 : 1;
+                            const next = (secIndex + dir + arr.length) % arr.length;
+                            const el = arr[next] as HTMLElement | null | undefined;
+                            if(el) try{ (el as HTMLElement).focus(); }catch{}
                           }
                         }}
                       >
@@ -401,21 +405,22 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[0] = el; }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
-                    const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
-                    const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
-                    const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
-                    if(k === rightKey){
+                    const keys = navKeys(local.controlScheme);
+                    if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
-                    if(k === downKey || k === upKey){
+                    if(k === keys.down || k === keys.up){
                       e.preventDefault(); e.stopPropagation();
-                      const dir = k === downKey ? 1 : -1;
-                      const next = (0 + dir + 3) % 3;
-                      const el = leftButtonRefs.current[next];
-                      if(el) try{ el.focus(); }catch{}
+                      const dir = k === keys.down ? 1 : -1;
+                      const arr = [...navRefs.current, ...leftButtonRefs.current] as Array<HTMLElement | null>;
+                      // find current index within combined array
+                      const active = document.activeElement as Element | null;
+                      const idx = arr.findIndex(a => a === active || (a && a.contains(active)));
+                      const next = ( (idx >= 0 ? idx : 0) + dir + arr.length) % arr.length;
+                      const el = arr[next];
+                      if(el) try{ (el as HTMLElement).focus(); }catch{}
                     }
                   }}
                 >{t('settings_apply')}</Button>
@@ -426,21 +431,21 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[1] = el; }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
-                    const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
-                    const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
-                    const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
-                    if(k === rightKey){
+                    const keys = navKeys(local.controlScheme);
+                    if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
-                    if(k === downKey || k === upKey){
+                    if(k === keys.down || k === keys.up){
                       e.preventDefault(); e.stopPropagation();
-                      const dir = k === downKey ? 1 : -1;
-                      const next = (1 + dir + 3) % 3;
-                      const el = leftButtonRefs.current[next];
-                      if(el) try{ el.focus(); }catch{}
+                      const dir = k === keys.down ? 1 : -1;
+                      const arr = [...navRefs.current, ...leftButtonRefs.current] as Array<HTMLElement | null>;
+                      const active = document.activeElement as Element | null;
+                      const idx = arr.findIndex(a => a === active || (a && a.contains(active)));
+                      const next = ( (idx >= 0 ? idx : 1) + dir + arr.length) % arr.length;
+                      const el = arr[next];
+                      if(el) try{ (el as HTMLElement).focus(); }catch{}
                     }
                   }}
                 >{t('settings_reset')}</Button>
@@ -451,21 +456,21 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[2] = el; }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
-                    const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
-                    const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
-                    const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
-                    if(k === rightKey){
+                    const keys = navKeys(local.controlScheme);
+                    if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
-                    if(k === downKey || k === upKey){
+                    if(k === keys.down || k === keys.up){
                       e.preventDefault(); e.stopPropagation();
-                      const dir = k === downKey ? 1 : -1;
-                      const next = (2 + dir + 3) % 3;
-                      const el = leftButtonRefs.current[next];
-                      if(el) try{ el.focus(); }catch{}
+                      const dir = k === keys.down ? 1 : -1;
+                      const arr = [...navRefs.current, ...leftButtonRefs.current] as Array<HTMLElement | null>;
+                      const active = document.activeElement as Element | null;
+                      const idx = arr.findIndex(a => a === active || (a && a.contains(active)));
+                      const next = ( (idx >= 0 ? idx : 2) + dir + arr.length) % arr.length;
+                      const el = arr[next];
+                      if(el) try{ (el as HTMLElement).focus(); }catch{}
                     }
                   }}
                 >{t('settings_back')}</Button>
