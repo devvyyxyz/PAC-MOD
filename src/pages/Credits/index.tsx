@@ -139,7 +139,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
                 <div>
                   <div className={styles.cardHeader}>
                     <div className={styles.cardIcon} aria-hidden>
-                      {c.icon ? <img src={c.icon} alt="" style={{width:28,height:28}}/> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd84d" strokeWidth="1.5"><circle cx="12" cy="12" r="6" /></svg>}
+                      {c.icon ? <img src={c.icon} alt="" style={{width:28,height:28}}/> : <img src="/assets/icons/circle.svg" alt="" style={{width:20,height:20}} />}
                     </div>
                     <div>
                       <h4 className={styles.cardTitle}>{c.name}</h4>

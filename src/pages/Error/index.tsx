@@ -53,7 +53,9 @@ export default function ErrorPage({error, info, onBack}:{error:Error, info?:Reac
   return (
     <div className={styles.wrap}>
       <div className={styles.stage} role="main">
-        <div className={styles.icon} aria-hidden>😵</div>
+        <div className={styles.icon} aria-hidden>
+          <img src="/assets/icons/skull.svg" alt="" width="48" height="48" aria-hidden style={{display:'block'}} />
+        </div>
         <h2 className={styles.title}>{t('error_title')}</h2>
         <div className={styles.message}>{t('error_message')}</div>
 
