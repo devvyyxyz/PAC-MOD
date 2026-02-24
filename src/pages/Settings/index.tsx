@@ -29,6 +29,18 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const [savedMouseEnabled, setSavedMouseEnabled] = React.useState<boolean>(()=>{
     try{ return config.loadConfig().settings?.mouseNavigation !== false; }catch(e){ return true; }
   });
+  const [savedSettings, setSavedSettings] = React.useState<Record<string, any>>(() => {
+    try{ return config.loadConfig().settings || {}; }catch(e){ return {}; }
+  });
+  const effectiveControlScheme = React.useMemo(() => {
+    try{
+      return (savedSettings && (savedSettings.controlScheme as 'arrow'|'wasd')) || ((config.loadConfig().settings as any)?.controlScheme) || 'arrow';
+    }catch(e){
+      return (savedSettings && (savedSettings.controlScheme as 'arrow'|'wasd')) || 'arrow';
+    }
+  }, [savedSettings]);
+  
+  
   // savedSettings is declared earlier; avoid duplicate declaration.
   useEffect(()=>{
     const cfg = config.loadConfig();
@@ -272,16 +284,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   // const mouseEnabled = local.mouseNavigation !== false;
   const visibleSettingsCount = visibleSettings.length;
 
-  // determine effective control scheme: use the persisted (saved) value so
-  // changing the staged setting does not immediately alter navigation keys
-  // until the user presses Apply.
-  const effectiveControlScheme = React.useMemo(() => {
-    try{
-      return (savedSettings && (savedSettings.controlScheme as 'arrow'|'wasd')) || ((config.loadConfig().settings as any)?.controlScheme) || 'arrow';
-    }catch(e){
-      return (savedSettings && (savedSettings.controlScheme as 'arrow'|'wasd')) || 'arrow';
-    }
-  }, [savedSettings]);
+  
 
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
     length: visibleSettingsCount,
@@ -427,9 +430,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
     return ()=> window.removeEventListener('pacman.config.changed', onCfg as EventListener);
   },[]);
 
-  const [savedSettings, setSavedSettings] = React.useState<Record<string, any>>(() => {
-    try{ return config.loadConfig().settings || {}; }catch(e){ return {}; }
-  });
+  
 
   const isDirty = React.useMemo(()=>{
     try{ return JSON.stringify(local || {}) !== JSON.stringify(savedSettings || {}); }catch(e){ return false; }
