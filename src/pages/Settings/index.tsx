@@ -354,7 +354,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   }, []);
 
   return (
-    <Layout title={t('settings_title')} subtitle={t('settings_subtitle')} sticky>
+    <Layout title={t('settings_title')} subtitle={t('settings_subtitle')}>
       <div className={`${styles.wrap} ${activeInput === 'keyboard' ? 'no-mouse' : ''}`}>
         <div className={styles.stage}>
 
