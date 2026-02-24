@@ -155,6 +155,16 @@ export default function Settings({onBack}:{onBack:()=>void}){
     }
   }
 
+  // Scroll helper to keep focused nav/button centered in left column
+  function ensureLeftVisible(el?: HTMLElement | null){
+    try{
+      const container = leftColumnRef.current;
+      if(!container || !el) return;
+      // use scrollIntoView with center block to place item in middle
+      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' } as ScrollIntoViewOptions);
+    }catch(e){}
+  }
+
   const withLabels = SECTIONS.map(s => ({ ...s, label: (
     // prefer explicit translation key if present, otherwise humanize the id
     (t(`settings_section_${s.id}`) !== `settings_section_${s.id}` ? t(`settings_section_${s.id}`) : (s.id.charAt(0).toUpperCase() + s.id.slice(1)))
@@ -362,7 +372,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
                         onClick={()=>setSection(sec.id)}
                         tabIndex={0}
                         ref={(el)=>{ navRefs.current[secIndex] = el; }}
-                        onKeyDown={(e)=>{
+                          onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
+                          onKeyDown={(e)=>{
                           const k = e.key.toLowerCase();
                           const keys = navKeys(local.controlScheme);
                           if(k === 'enter' || k === ' '){ e.preventDefault(); e.stopPropagation(); setSection(sec.id); }
@@ -403,6 +414,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   variant="primary"
                   onClick={handleApply}
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[0] = el; }}
+                    onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
                     const keys = navKeys(local.controlScheme);
@@ -429,6 +441,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   variant="secondary"
                   onClick={handleReset}
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[1] = el; }}
+                    onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
                     const keys = navKeys(local.controlScheme);
@@ -454,6 +467,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   variant="secondary"
                   onClick={onBack}
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[2] = el; }}
+                    onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
                     const keys = navKeys(local.controlScheme);

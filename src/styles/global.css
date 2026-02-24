@@ -9,6 +9,11 @@ html,body,#root{
   -moz-osx-font-smoothing:grayscale;
 }
 
+/* Enable smooth scrolling by default across the app */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Ensure full-bleed background so there is no visible page border */
 body{
   background-color:#000;
