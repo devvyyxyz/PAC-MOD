@@ -3,6 +3,7 @@ import menuStyles from '../../components/Menu/Menu.module.css';
 import Button from '../../components/Button';
 import styles from './Settings.module.css';
 import SETTINGS, { SettingMeta } from '../../config/settings';
+import LOCALES from '../../config/locales';
 import config from '../../config';
 import { useI18n, Layout, Grid, useToast } from '../../components';
 import { useKeyboardNavigation } from '../../hooks';
@@ -488,6 +489,11 @@ export default function Settings({onBack}:{onBack:()=>void}){
       case 'toggle':
         return <Toggle checked={!!val} onChange={(v)=>update(s.id, v)} disabled={disabled} saved={saved} label={null} />;
       case 'select':
+        // For the `locale` setting, show human-friendly localized names using LOCALES
+        if(s.id === 'locale'){
+          const opts = LOCALES.map(l => ({ value: l.code, label: t(l.labelKey) || l.defaultLabel }));
+          return <Select value={String(val || '')} onChange={(v)=>{ update(s.id, v); try{ setLocale(v); }catch(_){} }} options={opts} disabled={disabled} saved={saved} />;
+        }
         return <Select value={String(val || '')} onChange={(v)=>update(s.id, v)} options={(s.options||[])} disabled={disabled} saved={saved} />;
       case 'range':
         return <Range value={Number(val||0)} onChange={(n)=>update(s.id, n)} min={0} max={100} step={1} disabled={disabled} saved={saved} />;
