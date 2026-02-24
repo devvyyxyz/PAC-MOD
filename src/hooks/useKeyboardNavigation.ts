@@ -48,6 +48,13 @@ export function useKeyboardNavigation(opts: {
           if(active && !containerRef.current.contains(active)) return;
         }
       }catch(e){}
+      // if focus is inside a native form control, allow native keys to operate (range/select/input)
+      try{
+        const activeEl = document.activeElement as HTMLElement | null;
+        if(activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable)){
+          return;
+        }
+      }catch(e){}
       if(starting) return;
       if (!length || length <= 0) return;
       const k = e.key.toLowerCase();

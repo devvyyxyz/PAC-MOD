@@ -97,7 +97,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
     function handleKey(e: KeyboardEvent){
       const k = e.key.toLowerCase();
       // determine which keys are active based on controlScheme in local edits (user-facing)
-      const keys = navKeys(local.controlScheme);
+      const keys = navKeys(effectiveControlScheme);
       if(![keys.left, keys.right, keys.up, keys.down].includes(k)) return;
       const active = document.activeElement as Element | null;
       // If focus is inside a native form control, let native keys operate there
@@ -157,7 +157,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   // last nav item, focus should jump to the first nav item (and vice versa).
   function handleLeftKeyDown(e: React.KeyboardEvent){
     const k = e.key.toLowerCase();
-    const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+    const scheme = effectiveControlScheme;
     const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
     const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
     if(k !== downKey && k !== upKey) return;
@@ -258,9 +258,19 @@ export default function Settings({onBack}:{onBack:()=>void}){
   // const mouseEnabled = local.mouseNavigation !== false;
   const visibleSettingsCount = visibleSettings.length;
 
+  // determine effective control scheme: prefer local staged edit, else persisted config, else default to 'arrow'
+  const effectiveControlScheme = React.useMemo(() => {
+    try{
+      const persisted = (config.loadConfig().settings as any)?.controlScheme as 'arrow'|'wasd' | undefined;
+      return (typeof local.controlScheme !== 'undefined' ? (local.controlScheme as 'arrow'|'wasd') : persisted) || 'arrow';
+    }catch(e){
+      return (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+    }
+  }, [local.controlScheme]);
+
   const { focusIndex, setFocusIndex, activeInput, setActiveInput, onMouseEnter } = useKeyboardNavigation({
     length: visibleSettingsCount,
-    controlScheme: (local.controlScheme as 'arrow'|'wasd') || 'arrow',
+    controlScheme: effectiveControlScheme,
     axis: 'vertical',
     // only enable navigation hook when keyboard navigation is enabled in SAVED config, not local edits
     enabled: savedKeyboardEnabled,
@@ -283,9 +293,77 @@ export default function Settings({onBack}:{onBack:()=>void}){
         }
         // otherwise focus the control so native keys work (space, arrows)
         safeFocus(ctrl);
+        // attach auxiliary key handlers so WASD maps to native arrow actions
+        try{ attachControlInteraction(root as HTMLElement, ctrl); }catch(e){}
       }catch(e){}
     }
   });
+
+  // attach key handlers to a control when it's focused via keyboard activation
+  function attachControlInteraction(row: HTMLElement, control: HTMLElement){
+    if(!control) return;
+    const keys = navKeys(effectiveControlScheme);
+    function onKey(e: KeyboardEvent){
+      const k = (e.key || '').toLowerCase();
+      // Enter/Space should unfocus the control and return focus to the row
+      if(k === 'enter' || k === ' '){
+        try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
+        try{ (control as HTMLElement).blur(); }catch(_){ }
+        try{ safeFocus(row); }catch(_){ }
+        return;
+      }
+      // sliders: map left/right to decrement/increment
+      if(control.tagName === 'INPUT' && (control as HTMLInputElement).type === 'range'){
+        if(k === keys.left || k === keys.right){
+          try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
+          const input = control as HTMLInputElement;
+          const step = Number(input.getAttribute('step') || 1);
+          const min = Number(input.getAttribute('min') || 0);
+          const max = Number(input.getAttribute('max') || 100);
+          let val = Number(input.value || 0);
+          val += (k === keys.right ? step : -step);
+          val = Math.max(min, Math.min(max, val));
+          input.value = String(val);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        return;
+      }
+      // selects: map up/down to previous/next
+      if(control.tagName === 'SELECT'){
+        if(k === keys.up || k === keys.down){
+          try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
+          const sel = control as HTMLSelectElement;
+          const len = sel.options.length;
+          let idx = sel.selectedIndex;
+          idx += (k === keys.down ? 1 : -1);
+          idx = Math.max(0, Math.min(len - 1, idx));
+          if(idx !== sel.selectedIndex){ sel.selectedIndex = idx; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+        }
+        return;
+      }
+      // number inputs: use left/right to decrement/increment
+      if(control.tagName === 'INPUT' && (control as HTMLInputElement).type === 'number'){
+        if(k === keys.left || k === keys.right){
+          try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
+          const input = control as HTMLInputElement;
+          const step = Number(input.getAttribute('step') || 1);
+          const min = Number(input.getAttribute('min') || -Infinity);
+          const max = Number(input.getAttribute('max') || Infinity);
+          let val = Number(input.value || 0);
+          val += (k === keys.right ? step : -step);
+          val = Math.max(min, Math.min(max, val));
+          input.value = String(val);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        return;
+      }
+    }
+
+    function onBlur(){ try{ control.removeEventListener('keydown', onKey as any); control.removeEventListener('blur', onBlur as any); }catch(_){ } }
+    try{ control.addEventListener('keydown', onKey as any); control.addEventListener('blur', onBlur as any); }catch(_){ }
+  }
 
   // keep savedKeyboardEnabled in sync with persisted config
   React.useEffect(()=>{
@@ -496,7 +574,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                           onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
                           onKeyDown={(e)=>{
                           const k = e.key.toLowerCase();
-                          const keys = navKeys(local.controlScheme);
+                          const keys = navKeys(effectiveControlScheme);
                           if(k === 'enter' || k === ' '){ e.preventDefault(); e.stopPropagation(); setSection(sec.id); }
                           if(k === keys.right){
                             e.preventDefault(); e.stopPropagation();
@@ -538,7 +616,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    const keys = navKeys(local.controlScheme);
+                    const keys = navKeys(effectiveControlScheme);
                     if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
@@ -565,7 +643,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    const keys = navKeys(local.controlScheme);
+                    const keys = navKeys(effectiveControlScheme);
                     if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
@@ -591,7 +669,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onFocus={(e)=>{ ensureLeftVisible(e.currentTarget as HTMLElement); }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    const keys = navKeys(local.controlScheme);
+                    const keys = navKeys(effectiveControlScheme);
                     if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
@@ -651,7 +729,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onFocus={(e) => { setActiveInput && setActiveInput('keyboard'); setFocusIndex(i); ensureRightVisible(e.currentTarget as HTMLElement); }}
                     onKeyDown={(e)=>{
                       const k = e.key.toLowerCase();
-                      const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+                      const scheme = effectiveControlScheme;
                       const leftKey = scheme === 'wasd' ? 'a' : 'arrowleft';
                       if(k === leftKey){
                         // jump back to the left nav (so users can then navigate to left action buttons)
