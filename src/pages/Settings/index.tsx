@@ -310,6 +310,20 @@ export default function Settings({onBack}:{onBack:()=>void}){
     const keys = navKeys(effectiveControlScheme);
     function onKey(e: KeyboardEvent){
       const k = (e.key || '').toLowerCase();
+      // enforce active control scheme: block the non-selected keys so only the
+      // chosen scheme (wasd or arrow) actually changes control values.
+      try{
+        const arrowKeys = ['arrowleft','arrowright','arrowup','arrowdown'];
+        const wasdKeys = ['a','d','w','s'];
+        if(effectiveControlScheme === 'wasd' && arrowKeys.includes(k)){
+          try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
+          return;
+        }
+        if(effectiveControlScheme === 'arrow' && wasdKeys.includes(k)){
+          try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
+          return;
+        }
+      }catch(_){ }
       // Enter/Space should unfocus the control and return focus to the row
       if(k === 'enter' || k === ' '){
         try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
