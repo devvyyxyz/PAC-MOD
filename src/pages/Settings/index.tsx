@@ -104,6 +104,11 @@ export default function Settings({onBack}:{onBack:()=>void}){
       if(active && (active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)){
         return;
       }
+      // if focus is inside a setting row (right column), do not allow horizontal column switching
+      try{
+        const inSetting = btnRefs.current && btnRefs.current.some(b => b === active || (b && b.contains(active)));
+        if(inSetting && (k === keys.left || k === keys.right)) return;
+      }catch(e){}
       // build left column list: nav items then left buttons
       const leftList: Array<HTMLElement | null> = [];
       navRefs.current.forEach(n=> leftList.push(n));
