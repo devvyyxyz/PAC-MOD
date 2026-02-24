@@ -449,6 +449,23 @@ export default function Settings({onBack}:{onBack:()=>void}){
     document.documentElement.style.overflow = 'hidden';
     // add a body class so CSS can pin the settings container in place
     document.body.classList.add('pacman-settings-open');
+    // ensure the title/stage are scrolled into view when settings opens
+    try{ requestAnimationFrame(()=>{ try{ window.scrollTo(0,0); }catch(_){}}); }catch(_){ try{ window.scrollTo(0,0); }catch(_){} }
+    // also try to find the settings title `h1` and bring it into view
+    try{
+      setTimeout(()=>{
+        try{
+          const titleText = String(t('settings_title') || 'settings').trim().toLowerCase();
+          const heads = Array.from(document.querySelectorAll('h1')) as HTMLElement[];
+          for(const h of heads){
+            if(h.textContent && h.textContent.toLowerCase().includes(titleText)){
+              try{ h.scrollIntoView({ block: 'start', behavior: 'auto' }); }catch(e){}
+              break;
+            }
+          }
+        }catch(e){}
+      }, 50);
+    }catch(e){}
     return ()=>{
       document.body.style.overflow = prevBody;
       document.documentElement.style.overflow = prevDoc;
@@ -457,7 +474,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   }, []);
 
   return (
-    <Layout title={t('settings_title')} subtitle={t('settings_subtitle')}>
+    <Layout title={t('settings_title')} subtitle={t('settings_subtitle')} sticky>
       <div className={`${styles.wrap} ${activeInput === 'keyboard' ? 'no-mouse' : ''}`}>
         <div className={styles.stage}>
 
