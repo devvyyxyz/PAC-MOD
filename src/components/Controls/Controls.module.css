@@ -1,7 +1,26 @@
 /* Shared control styles used by the form controls */
 .wrap{display:flex;align-items:center;gap:8px}
 .label{font-size:14px;color:var(--muted)}
-.input, select, input[type="number"]{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:inherit}
+.input, select, input[type="number"], input[type="text"]{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:inherit}
+.input{min-width:140px}
+
+/* Custom input box styling */
+.input{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;transition:box-shadow .12s ease,border-color .12s ease,transform .12s ease;color:inherit}
+.input::placeholder{color:rgba(255,255,255,0.4)}
+.input:focus{outline:none;border-color:var(--accent);box-shadow:0 8px 30px rgba(255,176,56,0.06);transform:translateY(-1px)}
+.input[disabled]{opacity:0.5}
+
+/* tighten number input inner spacing and hide native spinner on webkit */
+input[type="number"]{padding-right:12px}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0 }
+
+/* custom numeric control with +/- buttons */
+.numCtrl{display:inline-flex;align-items:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden}
+.numBtn{background:transparent;border:0;color:var(--accent);padding:8px 10px;cursor:pointer;font-size:18px;line-height:1}
+.numBtn:disabled{opacity:0.4;cursor:default}
+.numBtn:focus{outline:3px solid rgba(255,208,90,0.12);outline-offset:2px}
+.numValue{min-width:48px;padding:8px 12px;text-align:center;color:inherit}
 .selectWrap{position:relative;display:inline-block}
 .select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:40px;min-width:140px;padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
 .chevron{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;color:var(--accent);pointer-events:none}
