@@ -13,7 +13,7 @@ export const DEFAULT_CONFIG = {
     music: true,
     difficulty: 'normal' as Difficulty,
     skin: 'classic',
-    volume: 70,
+    volume: 50,
     maxLives: 3,
     locale: 'en',
     invertControls: false,
