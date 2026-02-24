@@ -195,8 +195,21 @@ export default function Settings({onBack}:{onBack:()=>void}){
   }
 
   function handleReset(){
-    // restore persisted settings (discard local changes)
-    setLocal(savedSettings || {});
+    // Immediately persist defaults and notify listeners
+    try{
+      const defaults = { ...((DEFAULT_CONFIG && (DEFAULT_CONFIG.settings as any)) || {}) };
+      setLocal(defaults);
+      config.saveConfig({ settings: defaults as any });
+      setSavedSettings(defaults);
+      setSavedKeyboardEnabled(defaults.keyboardNavigation !== false);
+      setSavedMouseEnabled(defaults.mouseNavigation !== false);
+      window.dispatchEvent(new CustomEvent('pacman.config.changed', { detail: { settings: defaults } }));
+      window.dispatchEvent(new CustomEvent('pacman.config.applied', { detail: { settings: defaults } }));
+      try{ toast.show({ title: t('settings_reset_to_defaults') || 'Reset', message: t('settings_reset_to_defaults_message') || 'Defaults applied', type: 'success', duration: 2000 }); }catch(e){}
+    }catch(e){
+      console.error(e);
+      try{ toast.show({ title: t('settings_reset_failed') || 'Reset failed', message: '', type: 'error' }); }catch(e){}
+    }
   }
 
   function renderControl(s: SettingMeta){
@@ -421,10 +434,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
               {isDirty ? (
                 <div className={styles.unsavedBanner}>
                   <div>{t('settings_unsaved_changes') || 'You have unsaved changes'}</div>
-                  <div style={{display:'flex',gap:8}}>
-                    <Button variant="primary" onClick={handleApply}>{t('settings_apply')}</Button>
-                    <Button variant="secondary" onClick={handleReset}>{t('settings_reset')}</Button>
-                  </div>
+                  <div style={{opacity:0.9,fontSize:13}}>{t('settings_press_apply') || 'Press Apply in the left sidebar to save your changes'}</div>
                 </div>
               ) : null}
 
