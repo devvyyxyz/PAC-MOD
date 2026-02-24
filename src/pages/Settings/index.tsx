@@ -331,7 +331,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
         try{ safeFocus(row); }catch(_){ }
         return;
       }
-      // sliders: map left/right to decrement/increment
+      // sliders: map left/right to decrement/increment and call update so React state changes
       if(control.tagName === 'INPUT' && (control as HTMLInputElement).type === 'range'){
         if(k === keys.left || k === keys.right){
           try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
@@ -342,9 +342,10 @@ export default function Settings({onBack}:{onBack:()=>void}){
           let val = Number(input.value || 0);
           val += (k === keys.right ? step : -step);
           val = Math.max(min, Math.min(max, val));
-          input.value = String(val);
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
+          try{
+            const sid = row?.getAttribute('data-setting-id');
+            if(sid) update(sid, val);
+          }catch(_){ }
         }
         return;
       }
@@ -357,7 +358,9 @@ export default function Settings({onBack}:{onBack:()=>void}){
           let idx = sel.selectedIndex;
           idx += (k === keys.down ? 1 : -1);
           idx = Math.max(0, Math.min(len - 1, idx));
-          if(idx !== sel.selectedIndex){ sel.selectedIndex = idx; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+          if(idx !== sel.selectedIndex){
+            try{ const sid = row?.getAttribute('data-setting-id'); if(sid) update(sid, sel.options[idx].value); }catch(_){ }
+          }
         }
         return;
       }
@@ -372,9 +375,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
           let val = Number(input.value || 0);
           val += (k === keys.right ? step : -step);
           val = Math.max(min, Math.min(max, val));
-          input.value = String(val);
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
+          try{ const sid = row?.getAttribute('data-setting-id'); if(sid) update(sid, val); }catch(_){ }
         }
         return;
       }
@@ -743,6 +744,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   <div
                     className={styles.settingRow}
                     tabIndex={0}
+                    data-setting-id={s.id}
                     ref={(el) => { btnRefs.current[i] = el; }}
                     onMouseEnter={() => { if(savedMouseEnabled) onMouseEnter(i); }}
                     onFocus={(e) => { setActiveInput && setActiveInput('keyboard'); setFocusIndex(i); ensureRightVisible(e.currentTarget as HTMLElement); }}
