@@ -1,7 +1,7 @@
 const ICONS: Record<string, { src: string; color?: string; hoverColor?: string }> = {
   play: { src: '/assets/icons/play.svg', color: 'var(--accent)', hoverColor: '#071018' },
   pause: { src: '/assets/icons/pause.svg', color: 'var(--accent)', hoverColor: '#071018' },
-  close: { src: '/assets/icons/close.svg', color: 'var(--accent)' },
+  close: { src: '/assets/icons/close.svg', color: 'var(--accent)', hoverColor: '#071018' },
   menu: { src: '/assets/icons/menu.svg', color: 'var(--muted)' },
   settings: { src: '/assets/icons/settings.svg', color: 'var(--accent)', hoverColor: '#071018' },
   coin: { src: '/assets/icons/coin.svg', color: 'var(--accent)', hoverColor: '#071018' },
