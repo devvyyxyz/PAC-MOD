@@ -27,6 +27,13 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance: none; margi
 .chevron{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;display:inline-block;object-fit:contain;color:var(--accent);pointer-events:none}
 .select:focus{outline:3px solid rgba(255,208,90,0.12);outline-offset:3px}
 .select[disabled]{opacity:0.5;pointer-events:none}
+
+/* Ensure native selects in enabled cards sit above any card overlay so
+	 they remain clickable. Do not apply to disabled cards. */
+:global(.card):not(.disabled) .select, :global(.card):not(.disabled) select {
+	position: relative;
+	z-index: 1100;
+}
 .range{width:160px;appearance:none;height:6px;border-radius:6px;background:linear-gradient(90deg,#ffd84d 0%, #ffd84d 50%, rgba(255,255,255,0.08) 50%);outline:none}
 .range::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent) !important;box-shadow:0 6px 18px rgba(255,176,56,0.18);border:2px solid rgba(0,0,0,0.25)}
 .range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent) !important;border:2px solid rgba(0,0,0,0.25)}

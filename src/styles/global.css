@@ -28,6 +28,12 @@ body{
   cursor: none !important;
 }
 
+/* Allow form controls to keep a usable cursor so users can click without
+   moving the mouse when keyboard navigation is active. */
+.no-mouse input, .no-mouse select, .no-mouse button, .no-mouse textarea {
+  cursor: default !important;
+}
+
 /* subtle pulse when switching input mode to keyboard */
 @keyframes inputModePulse {
   0% { box-shadow: 0 0 0 0 rgba(255,208,90,0.0); transform: none; }
