@@ -57,8 +57,11 @@ export default function Credits({onBack}:{onBack:()=>void}){
     try{
       const container = stageRef.current;
       if(!container || !el) return;
+      const prevX = window.scrollX || window.pageXOffset || 0;
+      const prevY = window.scrollY || window.pageYOffset || 0;
       try{
-        el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+        el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+        try{ requestAnimationFrame(()=> window.scrollTo(prevX, prevY)); }catch(e){ window.scrollTo(prevX, prevY); }
       }catch(e){
         const containerRect = container.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
@@ -66,6 +69,7 @@ export default function Credits({onBack}:{onBack:()=>void}){
         let target = Math.round(container.scrollTop + offset);
         target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
         try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
+        try{ requestAnimationFrame(()=> window.scrollTo(prevX, prevY)); }catch(e){ window.scrollTo(prevX, prevY); }
       }
     }catch(e){}
   }

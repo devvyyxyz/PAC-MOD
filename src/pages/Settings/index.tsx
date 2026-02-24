@@ -191,7 +191,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
       // use native scrollIntoView on the element which scrolls the nearest
       // scrollable ancestor (our container) and center it inside that box
       try{
-        el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+        // scroll minimally so the focused element becomes visible without centering
+        el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
       }catch(e){
         // fallback to manual clamped scroll
         const containerRect = container.getBoundingClientRect();
@@ -210,7 +211,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
       const container = rightColumnRef.current;
       if(!container || !el) return;
       try{
-        el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+        el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
       }catch(e){
         const containerRect = container.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
@@ -252,7 +253,6 @@ export default function Settings({onBack}:{onBack:()=>void}){
   React.useEffect(()=>{
     if(!section && withLabels.length) setSection(withLabels[0].id);
   }, [withLabels, section]);
-
   // local contains unsaved edits; saved* hold persisted values until Apply is pressed
   // const keyboardEnabled = local.keyboardNavigation !== false;
   // const mouseEnabled = local.mouseNavigation !== false;
@@ -462,7 +462,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
         <div className={styles.stage}>
 
           <div className={styles.layout}>
-            <aside className={styles.left} ref={(el)=>{ leftColumnRef.current = el; attachLeftTrap(el); }} onKeyDown={handleLeftKeyDown}>
+            <aside className={styles.left} onKeyDown={handleLeftKeyDown}>
+              <div className={styles.leftInner} ref={(el)=>{ leftColumnRef.current = el; attachLeftTrap(el); }}>
               <ul className={styles.navList}>
                 {withLabels.map((sec, secIndex) => {
                   const items = SETTINGS.filter(s => sec.items.includes(s.id));
@@ -591,6 +592,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     }
                   }}
                 >{t('settings_back')}</Button>
+                </div>
               </div>
             </aside>
 
@@ -603,7 +605,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
               </select>
             </div>
 
-            <section className={styles.right} ref={(el)=>{ rightColumnRef.current = el; attachRightTrap(el); }}>
+            <section className={styles.right}>
+              <div className={styles.rightInner} ref={(el)=>{ rightColumnRef.current = el; attachRightTrap(el); }}>
               {isDirty ? (
                 <div className={styles.unsavedBanner}>
                   <div>{t('settings_unsaved_changes') || 'You have unsaved changes'}</div>
@@ -656,6 +659,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                 </Card>
               );
             })}
+              </div>
             </section>
           </div>
 
