@@ -5,6 +5,7 @@ import { useKeyboardNavigation } from '../../hooks';
 import config from '../../config';
 import AUDIO from '../../config/audio';
 import Title from '../Title';
+import Icon from '../Icon/Icon';
 import { playChomp } from '../../utils/audio';
 import Button from '../Button';
 
@@ -108,39 +109,39 @@ export default function Menu({onStart, onOpenSettings, onOpenCredits, onError}: 
 
         <div className={styles.controls} role="navigation" aria-label="Main menu">
             <Button
-            variant="primary"
-            className={styles.menuButton}
-            onClick={handleStart}
-            autoFocus
-            aria-disabled={starting}
-            ref={(el: HTMLButtonElement|null) => { btnRefs.current[0] = el; }}
-            onMouseEnter={() => { if(mouseEnabled) onMouseEnter(0); }}
-          >{starting ? t('starting') : t('start_game')}</Button>
+              variant="primary"
+              className={`${styles.menuButton} ${styles.hasIcon}`}
+              onClick={handleStart}
+              autoFocus
+              aria-disabled={starting}
+              ref={(el: HTMLButtonElement|null) => { btnRefs.current[0] = el; }}
+              onMouseEnter={() => { if(mouseEnabled) onMouseEnter(0); }}
+            ><Icon name="play" size={20} className={styles.menuIcon} /><span className={styles.btnLabel}>{starting ? t('starting') : t('start_game')}</span></Button>
 
           <div className={styles.row}>
             <Button
               variant="secondary"
-              className={styles.menuButton}
+              className={`${styles.menuButton} ${styles.hasIcon}`}
               onClick={handleSettings}
               ref={(el: HTMLButtonElement|null) => { btnRefs.current[1] = el; }}
               onMouseEnter={() => { if(mouseEnabled) onMouseEnter(1); }}
-            >{t('menu_settings')}</Button>
+            ><Icon name="settings" size={18} className={styles.menuIcon} /><span className={styles.btnLabel}>{t('menu_settings')}</span></Button>
             <Button
               variant="secondary"
-              className={styles.menuButton}
+              className={`${styles.menuButton} ${styles.hasIcon}`}
               onClick={handleCredits}
               ref={(el: HTMLButtonElement|null) => { btnRefs.current[2] = el; }}
               onMouseEnter={() => { if(mouseEnabled) onMouseEnter(2); }}
-            >{t('menu_credits')}</Button>
+            ><Icon name="ghost" size={18} className={styles.menuIcon} /><span className={styles.btnLabel}>{t('menu_credits')}</span></Button>
             {isDev ? (
               <Button
                 variant="secondary"
-                className={styles.menuButton}
+                className={`${styles.menuButton} ${styles.hasIcon}`}
                 onClick={handleError}
                 ref={(el: HTMLButtonElement|null) => { btnRefs.current[3] = el; }}
                 onMouseEnter={() => { if(mouseEnabled) onMouseEnter(3); }}
                 title="Simulate Error (dev)"
-              >{t('menu_simulate_error')}</Button>
+              ><Icon name="skull" size={18} className={styles.menuIcon} /><span className={styles.btnLabel}>{t('menu_simulate_error')}</span></Button>
             ) : null}
           </div>
         </div>
