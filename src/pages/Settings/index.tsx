@@ -64,6 +64,10 @@ export default function Settings({onBack}:{onBack:()=>void}){
       const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
       if(![leftKey, rightKey, upKey, downKey].includes(k)) return;
       const active = document.activeElement as Element | null;
+      // If focus is inside a native form control, let native keys operate there
+      if(active && (active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)){
+        return;
+      }
       // build left column list: nav items then left buttons
       const leftList: Array<HTMLElement | null> = [];
       navRefs.current.forEach(n=> leftList.push(n));
@@ -113,6 +117,36 @@ export default function Settings({onBack}:{onBack:()=>void}){
     const rest = cats.map(c => ({ id: c, items: SETTINGS.filter(s => s.category === c).map(s => s.id) }));
     return [...base, ...rest];
   }, []);
+
+  // Wrap navigation inside the left sidebar: when pressing ArrowDown on the
+  // last nav item, focus should jump to the first nav item (and vice versa).
+  function handleLeftKeyDown(e: React.KeyboardEvent){
+    const k = e.key.toLowerCase();
+    const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+    const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
+    const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
+    if(k !== downKey && k !== upKey) return;
+    // find which nav item contains the active element
+    const active = document.activeElement as Element | null;
+    const idx = navRefs.current.findIndex(n => n === active || (n && n.contains(active)));
+    if(idx === -1) return;
+    e.preventDefault();
+    e.stopPropagation();
+    // stop native/window listeners as well so global handlers don't override our wrap
+    try{ (e.nativeEvent as any).stopImmediatePropagation?.(); (e.nativeEvent as any).stopPropagation?.(); }catch(e){}
+    if(k === downKey){
+      const next = (idx + 1) % navRefs.current.length;
+      const el = navRefs.current[next];
+      if(el) try{ el.focus(); }catch(e){}
+      return;
+    }
+    if(k === upKey){
+      const prev = (idx - 1 + navRefs.current.length) % navRefs.current.length;
+      const el = navRefs.current[prev];
+      if(el) try{ el.focus(); }catch(e){}
+      return;
+    }
+  }
 
   const withLabels = SECTIONS.map(s => ({ ...s, label: (
     // prefer explicit translation key if present, otherwise humanize the id
@@ -308,7 +342,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
         <div className={styles.stage}>
 
           <div className={styles.layout}>
-            <aside className={styles.left} ref={(el)=>{ leftColumnRef.current = el; }}>
+            <aside className={styles.left} ref={(el)=>{ leftColumnRef.current = el; }} onKeyDown={handleLeftKeyDown}>
               <ul className={styles.navList}>
                 {withLabels.map((sec, secIndex) => {
                   const items = SETTINGS.filter(s => sec.items.includes(s.id));
@@ -323,23 +357,28 @@ export default function Settings({onBack}:{onBack:()=>void}){
                         ref={(el)=>{ navRefs.current[secIndex] = el; }}
                         onKeyDown={(e)=>{
                           const k = e.key.toLowerCase();
+                          const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+                          const leftKey = scheme === 'wasd' ? 'a' : 'arrowleft';
+                          const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
+                          const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
+                          const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
                           if(k === 'enter' || k === ' '){ e.preventDefault(); e.stopPropagation(); setSection(sec.id); }
-                          if(k === 'arrowright' || k === 'd'){
+                          if(k === rightKey){
                             e.preventDefault(); e.stopPropagation();
                             // focus first setting row
                             const first = btnRefs.current[0] as HTMLElement | null | undefined;
                             if(first) { try{ first.focus(); }catch{} }
                           }
-                          if(k === 'arrowleft' || k === 'a'){
+                          if(k === leftKey){
                             e.preventDefault(); e.stopPropagation();
                             // focus first left button (Apply)
                             const lb = leftButtonRefs.current[0] as HTMLElement | null | undefined;
                             if(lb) try{ lb.focus(); }catch{}
                           }
-                          if(k === 'arrowup' || k === 'arrowdown'){
+                          if(k === upKey || k === downKey){
                             // move between nav items
                             e.preventDefault(); e.stopPropagation();
-                            const dir = k === 'arrowup' ? -1 : 1;
+                            const dir = k === upKey ? -1 : 1;
                             const next = (secIndex + dir + withLabels.length) % withLabels.length;
                             const el = navRefs.current[next];
                             if(el) try{ el.focus(); }catch{}
@@ -355,21 +394,25 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     );
                 })}
               </ul>
-              <div className={styles.leftButtons}>
+                <div className={styles.leftButtons}>
                 <Button
                   variant="primary"
                   onClick={handleApply}
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[0] = el; }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    if(k === 'arrowright' || k === 'd'){
+                    const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+                    const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
+                    const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
+                    const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
+                    if(k === rightKey){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
-                    if(k === 'arrowdown' || k === 'arrowup'){
+                    if(k === downKey || k === upKey){
                       e.preventDefault(); e.stopPropagation();
-                      const dir = k === 'arrowdown' ? 1 : -1;
+                      const dir = k === downKey ? 1 : -1;
                       const next = (0 + dir + 3) % 3;
                       const el = leftButtonRefs.current[next];
                       if(el) try{ el.focus(); }catch{}
@@ -383,14 +426,18 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[1] = el; }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    if(k === 'arrowright' || k === 'd'){
+                    const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+                    const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
+                    const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
+                    const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
+                    if(k === rightKey){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
-                    if(k === 'arrowdown' || k === 'arrowup'){
+                    if(k === downKey || k === upKey){
                       e.preventDefault(); e.stopPropagation();
-                      const dir = k === 'arrowdown' ? 1 : -1;
+                      const dir = k === downKey ? 1 : -1;
                       const next = (1 + dir + 3) % 3;
                       const el = leftButtonRefs.current[next];
                       if(el) try{ el.focus(); }catch{}
@@ -404,14 +451,18 @@ export default function Settings({onBack}:{onBack:()=>void}){
                   ref={(el: HTMLButtonElement | null) => { leftButtonRefs.current[2] = el; }}
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
-                    if(k === 'arrowright' || k === 'd'){
+                    const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+                    const rightKey = scheme === 'wasd' ? 'd' : 'arrowright';
+                    const upKey = scheme === 'wasd' ? 'w' : 'arrowup';
+                    const downKey = scheme === 'wasd' ? 's' : 'arrowdown';
+                    if(k === rightKey){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
-                    if(k === 'arrowdown' || k === 'arrowup'){
+                    if(k === downKey || k === upKey){
                       e.preventDefault(); e.stopPropagation();
-                      const dir = k === 'arrowdown' ? 1 : -1;
+                      const dir = k === downKey ? 1 : -1;
                       const next = (2 + dir + 3) % 3;
                       const el = leftButtonRefs.current[next];
                       if(el) try{ el.focus(); }catch{}
@@ -458,7 +509,9 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onFocus={() => { setActiveInput && setActiveInput('keyboard'); setFocusIndex(i); }}
                     onKeyDown={(e)=>{
                       const k = e.key.toLowerCase();
-                      if(k === 'arrowleft' || k === 'a'){
+                      const scheme = (local.controlScheme as 'arrow'|'wasd') || 'arrow';
+                      const leftKey = scheme === 'wasd' ? 'a' : 'arrowleft';
+                      if(k === leftKey){
                         // jump back to the left nav (so users can then navigate to left action buttons)
                         e.preventDefault(); e.stopPropagation();
                         const idx = withLabels.findIndex(s => s.id === section);
