@@ -355,9 +355,11 @@ export default function Settings({onBack}:{onBack:()=>void}){
           try{ e.preventDefault(); e.stopPropagation(); }catch(_){ }
           const sel = control as HTMLSelectElement;
           const len = sel.options.length;
+          if(len === 0) return;
           let idx = sel.selectedIndex;
           idx += (k === keys.down ? 1 : -1);
-          idx = Math.max(0, Math.min(len - 1, idx));
+          // if computed index is out-of-range, jump to top (0)
+          if(idx < 0 || idx >= len) idx = 0;
           if(idx !== sel.selectedIndex){
             try{ const sid = row?.getAttribute('data-setting-id'); if(sid) update(sid, sel.options[idx].value); }catch(_){ }
           }
