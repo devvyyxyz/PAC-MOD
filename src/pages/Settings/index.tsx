@@ -224,6 +224,71 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
   // NOTE: global keyboard handling is managed by the other effect above
 
+  // Prevent scroll chaining: trap wheel/touch events on the left and right
+  // sidebar so scrolling there doesn't move the page behind it. This is a
+  // JS fallback for browsers that don't fully respect `overscroll-behavior`.
+  React.useEffect(()=>{
+    const els: Array<HTMLElement | null> = [leftColumnRef.current, rightColumnRef.current];
+    const handlers: Array<() => void> = [];
+
+    els.forEach((el)=>{
+      if(!el) return;
+      // Wheel handler
+      const onWheel = (e: WheelEvent) => {
+        // Only run when there's vertical scroll
+        if(Math.abs(e.deltaY) < 1) return;
+        const delta = e.deltaY;
+        const atTop = el.scrollTop === 0;
+        const atBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 1;
+        if((delta < 0 && atTop) || (delta > 0 && atBottom)){
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+      el.addEventListener('wheel', onWheel as EventListener, { passive: false });
+
+      // Touch handling for mobile
+      let startY = 0;
+      const onTouchStart = (ev: TouchEvent) => { startY = ev.touches?.[0]?.clientY || 0; };
+      const onTouchMove = (ev: TouchEvent) => {
+        const y = ev.touches?.[0]?.clientY || 0;
+        const delta = startY - y;
+        const atTop = el.scrollTop === 0;
+        const atBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 1;
+        if((delta < 0 && atTop) || (delta > 0 && atBottom)){
+          ev.preventDefault();
+          ev.stopPropagation();
+        }
+      };
+      el.addEventListener('touchstart', onTouchStart, { passive: true } as any);
+      el.addEventListener('touchmove', onTouchMove as EventListener, { passive: false } as any);
+
+      handlers.push(()=>{
+        try{ el.removeEventListener('wheel', onWheel as EventListener); }catch(e){}
+        try{ el.removeEventListener('touchstart', onTouchStart as EventListener); }catch(e){}
+        try{ el.removeEventListener('touchmove', onTouchMove as EventListener); }catch(e){}
+      });
+    });
+
+    return ()=> handlers.forEach(h=>h());
+  }, [leftColumnRef, rightColumnRef]);
+
+  // Disable body scrolling while Settings is active on desktop so the inner
+  // sticky sidebars remain visible. Restore on unmount. Mobile keeps native
+  // scrolling behavior.
+  React.useEffect(()=>{
+    if(typeof window === 'undefined') return;
+    if(window.innerWidth < 800) return;
+    const prevBody = document.body.style.overflow;
+    const prevDoc = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return ()=>{
+      document.body.style.overflow = prevBody;
+      document.documentElement.style.overflow = prevDoc;
+    };
+  }, []);
+
   return (
     <Layout title={t('settings_title')} subtitle={t('settings_subtitle')} sticky>
       <div className={`${styles.wrap} ${activeInput === 'keyboard' ? 'no-mouse' : ''}`}>

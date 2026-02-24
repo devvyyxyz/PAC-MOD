@@ -32,3 +32,15 @@ body{
 .no-mouse .wrap, .no-mouse .stage {
   animation: inputModePulse .28s ease;
 }
+
+/* Hide scrollbars globally but keep scrolling functionality */
+html, body, * {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* WebKit browsers */
+html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
