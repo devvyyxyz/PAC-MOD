@@ -12,8 +12,16 @@ type Props = {
 export default function Toggle({checked, onChange, disabled, saved, label}: Props){
   return (
     <div className={styles.wrap}>
-      <label style={{display:'flex',alignItems:'center',gap:8}}>
-        <input className={styles.checkbox} type="checkbox" checked={checked} onChange={(e)=>onChange(e.target.checked)} disabled={disabled} />
+      <label className={styles.toggle} style={{display:'flex',alignItems:'center',gap:8}}>
+        <input
+          className={styles.checkbox}
+          type="checkbox"
+          checked={checked}
+          onChange={(e)=>onChange(e.target.checked)}
+          disabled={disabled}
+          aria-checked={checked}
+        />
+        <span className={styles.checkboxFake} aria-hidden />
         <span className={styles.label}>{label}</span>
       </label>
       {saved ? <div className={styles.saved}>Saved</div> : null}
