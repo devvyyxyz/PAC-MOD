@@ -18,6 +18,7 @@ const Button = React.forwardRef<HTMLButtonElement, Props>(function Button({varia
     variant === 'primary' ? styles.primary : '',
     variant === 'secondary' ? styles.secondary : '',
     full ? styles.full : '',
+    icon ? styles.hasIcon : ''
   ].filter(Boolean).join(' ');
 
   function handleClick(e: React.MouseEvent<HTMLButtonElement>){
@@ -33,7 +34,7 @@ const Button = React.forwardRef<HTMLButtonElement, Props>(function Button({varia
   return (
     <button ref={ref} className={cls} onClick={handleClick} onMouseEnter={handleMouseEnter} {...rest}>
       {icon ? <span className={styles.iconWrap}><Icon name={icon as any} size={18} /></span> : null}
-      {children}
+      <span className={styles.label}>{children}</span>
     </button>
   );
 });
