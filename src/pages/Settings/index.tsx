@@ -247,22 +247,22 @@ export default function Settings({onBack}:{onBack:()=>void}){
                         ref={(el)=>{ navRefs.current[secIndex] = el; }}
                         onKeyDown={(e)=>{
                           const k = e.key.toLowerCase();
-                          if(k === 'enter' || k === ' '){ e.preventDefault(); setSection(sec.id); }
+                          if(k === 'enter' || k === ' '){ e.preventDefault(); e.stopPropagation(); setSection(sec.id); }
                           if(k === 'arrowright' || k === 'd'){
-                            e.preventDefault();
+                            e.preventDefault(); e.stopPropagation();
                             // focus first setting row
                             const first = btnRefs.current[0] as HTMLElement | null | undefined;
                             if(first) { try{ first.focus(); }catch{} }
                           }
                           if(k === 'arrowleft' || k === 'a'){
-                            e.preventDefault();
+                            e.preventDefault(); e.stopPropagation();
                             // focus first left button (Apply)
                             const lb = leftButtonRefs.current[0] as HTMLElement | null | undefined;
                             if(lb) try{ lb.focus(); }catch{}
                           }
                           if(k === 'arrowup' || k === 'arrowdown'){
                             // move between nav items
-                            e.preventDefault();
+                            e.preventDefault(); e.stopPropagation();
                             const dir = k === 'arrowup' ? -1 : 1;
                             const next = (secIndex + dir + withLabels.length) % withLabels.length;
                             const el = navRefs.current[next];
@@ -287,12 +287,12 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
                     if(k === 'arrowright' || k === 'd'){
-                      e.preventDefault();
+                      e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
                     if(k === 'arrowdown' || k === 'arrowup'){
-                      e.preventDefault();
+                      e.preventDefault(); e.stopPropagation();
                       const dir = k === 'arrowdown' ? 1 : -1;
                       const next = (0 + dir + 3) % 3;
                       const el = leftButtonRefs.current[next];
@@ -308,12 +308,12 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
                     if(k === 'arrowright' || k === 'd'){
-                      e.preventDefault();
+                      e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
                     if(k === 'arrowdown' || k === 'arrowup'){
-                      e.preventDefault();
+                      e.preventDefault(); e.stopPropagation();
                       const dir = k === 'arrowdown' ? 1 : -1;
                       const next = (1 + dir + 3) % 3;
                       const el = leftButtonRefs.current[next];
@@ -329,12 +329,12 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     onKeyDown={(e)=>{
                     const k = e.key.toLowerCase();
                     if(k === 'arrowright' || k === 'd'){
-                      e.preventDefault();
+                      e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
                       if(first) try{ first.focus(); }catch{}
                     }
                     if(k === 'arrowdown' || k === 'arrowup'){
-                      e.preventDefault();
+                      e.preventDefault(); e.stopPropagation();
                       const dir = k === 'arrowdown' ? 1 : -1;
                       const next = (2 + dir + 3) % 3;
                       const el = leftButtonRefs.current[next];
@@ -381,7 +381,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                       const k = e.key.toLowerCase();
                       if(k === 'arrowleft' || k === 'a'){
                         // jump back to the left nav (so users can then navigate to left action buttons)
-                        e.preventDefault();
+                        e.preventDefault(); e.stopPropagation();
                         const idx = withLabels.findIndex(s => s.id === section);
                         const navEl = navRefs.current[idx];
                         if(navEl) try{ navEl.focus(); }catch{}
