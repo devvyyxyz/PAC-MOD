@@ -11,7 +11,8 @@ export default function Icon({ name, size = 20, className = '', title, onClick }
   const cfg = (ICONS as any)[name] || { src: `/assets/icons/${name}.svg` };
   const src = cfg.src || `/assets/icons/${name}.svg`;
   const style: React.CSSProperties = {};
-  if(cfg.color) style.color = cfg.color;
+  // expose colors as CSS variables so hover styles in parent can override them
+  if(cfg.color) (style as any)['--icon-color'] = cfg.color;
   if((cfg as any).hoverColor) (style as any)['--icon-hover-color'] = (cfg as any).hoverColor;
 
   const [svg, setSvg] = React.useState<string | null>(() => svgCache.get(src) || null);

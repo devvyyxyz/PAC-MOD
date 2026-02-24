@@ -4,3 +4,6 @@
   line-height: 0;
 }
 .clickable { cursor: pointer; }
+
+/* default icon color uses CSS variable set by Icon.tsx (falls back to currentColor) */
+.icon{ color: var(--icon-color, currentColor); }
