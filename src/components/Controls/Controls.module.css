@@ -21,6 +21,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance: none; margi
 .numBtn:disabled{opacity:0.4;cursor:default}
 .numBtn:focus{outline:3px solid rgba(255,208,90,0.12);outline-offset:2px}
 .numValue{min-width:48px;padding:8px 12px;text-align:center;color:inherit}
+.numCtrl:focus{outline:3px solid rgba(255,208,90,0.12);outline-offset:3px}
 .selectWrap{position:relative;display:inline-block}
 .select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:40px;min-width:140px;padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
 .chevron{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;color:var(--accent);pointer-events:none}

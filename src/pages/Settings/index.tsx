@@ -104,6 +104,14 @@ export default function Settings({onBack}:{onBack:()=>void}){
       if(active && (active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)){
         return;
       }
+      // If the active element is inside a setting row but not the row element itself
+      // (e.g. a control inside the row like a slider/select/custom number control),
+      // don't run global navigation — let the control handle keys instead.
+      try{
+        const insideRow = btnRefs.current && btnRefs.current.some(b => !!b && (b === active || (b && b.contains(active))));
+        const activeIsRow = btnRefs.current && btnRefs.current.some(b => b === active);
+        if(insideRow && !activeIsRow) return;
+      }catch(e){}
       // if focus is inside a setting row (right column), do not allow horizontal column switching
       try{
         const inSetting = btnRefs.current && btnRefs.current.some(b => b === active || (b && b.contains(active)));
