@@ -26,7 +26,9 @@ export function useKeyboardNavigation(opts: {
   useEffect(()=>{
     if (!length || length <= 0) return;
     const el = btnRefs?.current?.[focusIndex] as HTMLElement | undefined | null;
-    if(el) el.focus();
+    if(el){
+      try{ (el as HTMLElement).focus?.({ preventScroll: true } as any); }catch(e){ try{ (el as HTMLElement).focus(); }catch(e){} }
+    }
     // set data-focused attribute
     try{
       btnRefs?.current?.forEach((b, i) => {

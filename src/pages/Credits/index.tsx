@@ -57,7 +57,12 @@ export default function Credits({onBack}:{onBack:()=>void}){
     try{
       const container = stageRef.current;
       if(!container || !el) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' } as ScrollIntoViewOptions);
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
+      let target = Math.round(container.scrollTop + offset);
+      target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
+      try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
     }catch(e){}
   }
 
@@ -76,7 +81,9 @@ export default function Credits({onBack}:{onBack:()=>void}){
     setFocusableCount(nodes.length);
 
     // initialize focus to first focusable element
-    if(nodes.length) setTimeout(()=>{ try{ nodes[focusIndex]?.focus(); nodes.forEach((n,j)=>{ if(j===focusIndex) n.setAttribute('data-focused','true'); else n.removeAttribute('data-focused'); }); }catch(e){} }, 50);
+    // helper to focus without scrolling the viewport
+    function safeFocus(el?: HTMLElement | null){ if(!el) return; try{ (el as HTMLElement).focus?.({ preventScroll: true } as any); }catch(e){ try{ (el as HTMLElement).focus(); }catch(e){} } }
+    if(nodes.length) setTimeout(()=>{ try{ safeFocus(nodes[focusIndex]); nodes.forEach((n,j)=>{ if(j===focusIndex) n.setAttribute('data-focused','true'); else n.removeAttribute('data-focused'); }); }catch(e){} }, 50);
 
     // hook handles key events; just cleanup on unmount
     return ()=>{

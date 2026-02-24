@@ -16,7 +16,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
   const [local, setLocal] = useState<LocalSettings>({});
   const toast = useToast();
   const { t, setLocale } = useI18n();
-  const [section, setSection] = useState<string>('all');
+  const [section, setSection] = useState<string>('');
   const btnRefs = React.useRef<Array<HTMLDivElement | null>>([]);
   const navRefs = React.useRef<Array<HTMLLIElement | null>>([]);
   const leftButtonRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
@@ -54,6 +54,17 @@ export default function Settings({onBack}:{onBack:()=>void}){
     } as const;
   }
 
+  // Focus helper that avoids triggering browser scroll when focusing elements
+  function safeFocus(el?: Element | null){
+    if(!el) return;
+    try{
+      // modern browsers support preventScroll option
+      (el as HTMLElement).focus?.({ preventScroll: true } as any);
+    }catch(e){
+      try{ (el as HTMLElement).focus(); }catch(e){}
+    }
+  }
+
   React.useEffect(()=>{
     if(!savedKeyboardEnabled) return;
     function idxOf(el: Element | null, arr: Array<Element | null>){
@@ -88,27 +99,27 @@ export default function Settings({onBack}:{onBack:()=>void}){
       // up/down within current column (prefer containment check)
       if(k === keys.up){
         e.preventDefault();
-        if(leftIdx >= 0){ const next = Math.max(0, leftIdx - 1); leftList[next]?.focus(); }
-        else if(rightIdx >= 0){ const next = Math.max(0, rightIdx - 1); rightList[next]?.focus(); }
+        if(leftIdx >= 0){ const next = Math.max(0, leftIdx - 1); safeFocus(leftList[next] as HTMLElement | null); }
+          else if(rightIdx >= 0){ const next = Math.max(0, rightIdx - 1); safeFocus(rightList[next] as HTMLElement | null); }
         return;
       }
       if(k === keys.down){
         e.preventDefault();
-        if(leftIdx >= 0){ const next = Math.min(leftList.length - 1, leftIdx + 1); leftList[next]?.focus(); }
-        else if(rightIdx >= 0){ const next = Math.min(rightList.length - 1, rightIdx + 1); rightList[next]?.focus(); }
+        if(leftIdx >= 0){ const next = Math.min(leftList.length - 1, leftIdx + 1); safeFocus(leftList[next] as HTMLElement | null); }
+        else if(rightIdx >= 0){ const next = Math.min(rightList.length - 1, rightIdx + 1); safeFocus(rightList[next] as HTMLElement | null); }
         return;
       }
 
       // horizontal: move between columns keeping index
       if(k === keys.right){
         e.preventDefault();
-        if(leftIdx >= 0){ const target = Math.min(rightList.length - 1, leftIdx); rightList[target]?.focus(); }
+        if(leftIdx >= 0){ const target = Math.min(rightList.length - 1, leftIdx); safeFocus(rightList[target] as HTMLElement | null); }
         else if(rightIdx >= 0){ /* already right side */ }
         return;
       }
       if(k === keys.left){
         e.preventDefault();
-        if(rightIdx >= 0){ const target = Math.min(navRefs.current.length - 1, rightIdx); navRefs.current[target]?.focus(); }
+        if(rightIdx >= 0){ const target = Math.min(navRefs.current.length - 1, rightIdx); safeFocus(navRefs.current[target] as HTMLElement | null); }
         else if(leftIdx >= 0){ /* already left side */ }
         return;
       }
@@ -120,9 +131,8 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
   const SECTIONS = React.useMemo(() => {
     const cats = Array.from(new Set(SETTINGS.map(s => s.category).filter(Boolean)));
-    const base = [{ id: 'all', items: SETTINGS.map(s => s.id) }];
     const rest = cats.map(c => ({ id: c, items: SETTINGS.filter(s => s.category === c).map(s => s.id) }));
-    return [...base, ...rest];
+    return rest;
   }, []);
 
   // Wrap navigation inside the left sidebar: when pressing ArrowDown on the
@@ -144,13 +154,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
     if(k === downKey){
       const next = (idx + 1) % navRefs.current.length;
       const el = navRefs.current[next];
-      if(el) try{ el.focus(); }catch(e){}
+      if(el) try{ safeFocus(el); }catch(e){}
       return;
     }
     if(k === upKey){
       const prev = (idx - 1 + navRefs.current.length) % navRefs.current.length;
       const el = navRefs.current[prev];
-      if(el) try{ el.focus(); }catch(e){}
+      if(el) try{ safeFocus(el); }catch(e){}
       return;
     }
   }
@@ -160,8 +170,15 @@ export default function Settings({onBack}:{onBack:()=>void}){
     try{
       const container = leftColumnRef.current;
       if(!container || !el) return;
-      // use scrollIntoView with center block to place item in middle
-      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' } as ScrollIntoViewOptions);
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      // amount to scroll so the element is centered inside the container
+      const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
+      let target = Math.round(container.scrollTop + offset);
+      // clamp target to valid range
+      target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
+      // perform instant scroll (avoid smooth animation which can hide the title)
+      try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
     }catch(e){}
   }
 
@@ -170,8 +187,12 @@ export default function Settings({onBack}:{onBack:()=>void}){
     try{
       const container = rightColumnRef.current;
       if(!container || !el) return;
-      // use scrollIntoView so the row is centered within the right column
-      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' } as ScrollIntoViewOptions);
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const offset = (elRect.top - containerRect.top) - (container.clientHeight / 2) + (el.clientHeight / 2);
+      let target = Math.round(container.scrollTop + offset);
+      target = Math.max(0, Math.min(target, container.scrollHeight - container.clientHeight));
+      try{ container.scrollTo({ top: target, behavior: 'auto' }); }catch(e){ container.scrollTop = target; }
     }catch(e){}
   }
 
@@ -182,6 +203,11 @@ export default function Settings({onBack}:{onBack:()=>void}){
 
   const activeSection = withLabels.find(s=>s.id===section) || withLabels[0];
   const visibleSettings = SETTINGS.filter(s=> activeSection.items.includes(s.id));
+
+  // if no section selected (initial render), default to the first real category
+  React.useEffect(()=>{
+    if(!section && withLabels.length) setSection(withLabels[0].id);
+  }, [withLabels, section]);
 
   // local contains unsaved edits; saved* hold persisted values until Apply is pressed
   // const keyboardEnabled = local.keyboardNavigation !== false;
@@ -208,11 +234,11 @@ export default function Settings({onBack}:{onBack:()=>void}){
         if(ctrl.tagName === 'INPUT' && (ctrl as HTMLInputElement).type === 'checkbox'){
           (ctrl as HTMLInputElement).click();
           // clicking can blur focus; restore focus to the row so keyboard navigation keeps working
-          setTimeout(()=>{ try{ root.focus(); }catch(e){} }, 0);
+          setTimeout(()=>{ try{ safeFocus(root); }catch(e){} }, 0);
           return;
         }
         // otherwise focus the control so native keys work (space, arrows)
-        ctrl.focus();
+        safeFocus(ctrl);
       }catch(e){}
     }
   });
@@ -301,51 +327,71 @@ export default function Settings({onBack}:{onBack:()=>void}){
   // Prevent scroll chaining: trap wheel/touch events on the left and right
   // sidebar so scrolling there doesn't move the page behind it. This is a
   // JS fallback for browsers that don't fully respect `overscroll-behavior`.
-  React.useEffect(()=>{
-    const els: Array<HTMLElement | null> = [leftColumnRef.current, rightColumnRef.current];
-    const handlers: Array<() => void> = [];
+  // Attach scroll-trap listeners when the sidebar elements are assigned.
+  const leftTrapCleanup = React.useRef<(() => void) | null>(null);
+  const rightTrapCleanup = React.useRef<(() => void) | null>(null);
 
-    els.forEach((el)=>{
-      if(!el) return;
-      // Wheel handler
-      const onWheel = (e: WheelEvent) => {
-        // Only run when there's vertical scroll
-        if(Math.abs(e.deltaY) < 1) return;
-        const delta = e.deltaY;
-        const atTop = el.scrollTop === 0;
-        const atBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 1;
-        if((delta < 0 && atTop) || (delta > 0 && atBottom)){
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-      el.addEventListener('wheel', onWheel as EventListener, { passive: false });
+  function attachLeftTrap(el: HTMLElement | null){
+    // remove previous
+    if(leftTrapCleanup.current){ try{ leftTrapCleanup.current(); }catch(e){} leftTrapCleanup.current = null; }
+    if(!el) return;
+    let startY = 0;
+    const onWheel = (e: WheelEvent) => {
+      const delta = e.deltaY;
+      const atTop = el.scrollTop === 0;
+      const atBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 1;
+      if((delta < 0 && atTop) || (delta > 0 && atBottom)){
+        e.preventDefault(); e.stopPropagation(); try{ (e as any).stopImmediatePropagation?.(); }catch(_){}
+      }
+    };
+    const onTouchStart = (ev: TouchEvent) => { startY = ev.touches?.[0]?.clientY || 0; };
+    const onTouchMove = (ev: TouchEvent) => {
+      const y = ev.touches?.[0]?.clientY || 0;
+      const delta = startY - y;
+      const atTop = el.scrollTop === 0;
+      const atBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 1;
+      if((delta < 0 && atTop) || (delta > 0 && atBottom)){
+        ev.preventDefault(); ev.stopPropagation(); try{ (ev as any).stopImmediatePropagation?.(); }catch(_){}
+      }
+    };
+    // use capture:true so we intercept the wheel/touch before other listeners
+    el.addEventListener('wheel', onWheel as EventListener, { passive: false, capture: true });
+    el.addEventListener('touchstart', onTouchStart as EventListener, { passive: true, capture: true } as any);
+    el.addEventListener('touchmove', onTouchMove as EventListener, { passive: false, capture: true } as any);
+    leftTrapCleanup.current = ()=>{ try{ el.removeEventListener('wheel', onWheel as EventListener, { capture: true } as any); }catch(e){} try{ el.removeEventListener('touchstart', onTouchStart as EventListener, { capture: true } as any); }catch(e){} try{ el.removeEventListener('touchmove', onTouchMove as EventListener, { capture: true } as any); }catch(e){} };
+  }
 
-      // Touch handling for mobile
-      let startY = 0;
-      const onTouchStart = (ev: TouchEvent) => { startY = ev.touches?.[0]?.clientY || 0; };
-      const onTouchMove = (ev: TouchEvent) => {
-        const y = ev.touches?.[0]?.clientY || 0;
-        const delta = startY - y;
-        const atTop = el.scrollTop === 0;
-        const atBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 1;
-        if((delta < 0 && atTop) || (delta > 0 && atBottom)){
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-      };
-      el.addEventListener('touchstart', onTouchStart, { passive: true } as any);
-      el.addEventListener('touchmove', onTouchMove as EventListener, { passive: false } as any);
+  function attachRightTrap(el: HTMLElement | null){
+    if(rightTrapCleanup.current){ try{ rightTrapCleanup.current(); }catch(e){} rightTrapCleanup.current = null; }
+    if(!el) return;
+    let startY = 0;
+    const onWheel = (e: WheelEvent) => {
+      const delta = e.deltaY;
+      const atTop = el.scrollTop === 0;
+      const atBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 1;
+      if((delta < 0 && atTop) || (delta > 0 && atBottom)){
+        e.preventDefault(); e.stopPropagation(); try{ (e as any).stopImmediatePropagation?.(); }catch(_){}
+      }
+    };
+    const onTouchStart = (ev: TouchEvent) => { startY = ev.touches?.[0]?.clientY || 0; };
+    const onTouchMove = (ev: TouchEvent) => {
+      const y = ev.touches?.[0]?.clientY || 0;
+      const delta = startY - y;
+      const atTop = el.scrollTop === 0;
+      const atBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 1;
+      if((delta < 0 && atTop) || (delta > 0 && atBottom)){
+        ev.preventDefault(); ev.stopPropagation(); try{ (ev as any).stopImmediatePropagation?.(); }catch(_){}
+      }
+    };
+    // use capture:true so we intercept the wheel/touch before other listeners
+    el.addEventListener('wheel', onWheel as EventListener, { passive: false, capture: true });
+    el.addEventListener('touchstart', onTouchStart as EventListener, { passive: true, capture: true } as any);
+    el.addEventListener('touchmove', onTouchMove as EventListener, { passive: false, capture: true } as any);
+    rightTrapCleanup.current = ()=>{ try{ el.removeEventListener('wheel', onWheel as EventListener, { capture: true } as any); }catch(e){} try{ el.removeEventListener('touchstart', onTouchStart as EventListener, { capture: true } as any); }catch(e){} try{ el.removeEventListener('touchmove', onTouchMove as EventListener, { capture: true } as any); }catch(e){} };
+  }
 
-      handlers.push(()=>{
-        try{ el.removeEventListener('wheel', onWheel as EventListener); }catch(e){}
-        try{ el.removeEventListener('touchstart', onTouchStart as EventListener); }catch(e){}
-        try{ el.removeEventListener('touchmove', onTouchMove as EventListener); }catch(e){}
-      });
-    });
-
-    return ()=> handlers.forEach(h=>h());
-  }, [leftColumnRef, rightColumnRef]);
+  // cleanup on unmount
+  React.useEffect(()=>{ return ()=>{ if(leftTrapCleanup.current) try{ leftTrapCleanup.current(); }catch(e){} if(rightTrapCleanup.current) try{ rightTrapCleanup.current(); }catch(e){} }; }, []);
 
   // Disable body scrolling while Settings is active on desktop so the inner
   // sticky sidebars remain visible. Restore on unmount. Mobile keeps native
@@ -357,9 +403,12 @@ export default function Settings({onBack}:{onBack:()=>void}){
     const prevDoc = document.documentElement.style.overflow;
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
+    // add a body class so CSS can pin the settings container in place
+    document.body.classList.add('pacman-settings-open');
     return ()=>{
       document.body.style.overflow = prevBody;
       document.documentElement.style.overflow = prevDoc;
+      document.body.classList.remove('pacman-settings-open');
     };
   }, []);
 
@@ -369,7 +418,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
         <div className={styles.stage}>
 
           <div className={styles.layout}>
-            <aside className={styles.left} ref={(el)=>{ leftColumnRef.current = el; }} onKeyDown={handleLeftKeyDown}>
+            <aside className={styles.left} ref={(el)=>{ leftColumnRef.current = el; attachLeftTrap(el); }} onKeyDown={handleLeftKeyDown}>
               <ul className={styles.navList}>
                 {withLabels.map((sec, secIndex) => {
                   const items = SETTINGS.filter(s => sec.items.includes(s.id));
@@ -391,13 +440,13 @@ export default function Settings({onBack}:{onBack:()=>void}){
                             e.preventDefault(); e.stopPropagation();
                             // focus first setting row
                             const first = btnRefs.current[0] as HTMLElement | null | undefined;
-                            if(first) { try{ first.focus(); }catch{} }
+                            if(first) { try{ safeFocus(first); }catch{} }
                           }
                           if(k === keys.left){
                             e.preventDefault(); e.stopPropagation();
                             // focus first left button (Apply)
                             const lb = leftButtonRefs.current[0] as HTMLElement | null | undefined;
-                            if(lb) try{ lb.focus(); }catch{}
+                            if(lb) try{ safeFocus(lb); }catch{}
                           }
                           if(k === keys.up || k === keys.down){
                             // move between nav items and left action buttons (wrap across both)
@@ -406,7 +455,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                             const dir = k === keys.up ? -1 : 1;
                             const next = (secIndex + dir + arr.length) % arr.length;
                             const el = arr[next] as HTMLElement | null | undefined;
-                            if(el) try{ (el as HTMLElement).focus(); }catch{}
+                            if(el) try{ safeFocus(el as HTMLElement); }catch{}
                           }
                         }}
                       >
@@ -431,7 +480,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
-                      if(first) try{ first.focus(); }catch{}
+                      if(first) try{ safeFocus(first); }catch{}
                     }
                     if(k === keys.down || k === keys.up){
                       e.preventDefault(); e.stopPropagation();
@@ -442,7 +491,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                       const idx = arr.findIndex(a => a === active || (a && a.contains(active)));
                       const next = ( (idx >= 0 ? idx : 0) + dir + arr.length) % arr.length;
                       const el = arr[next];
-                      if(el) try{ (el as HTMLElement).focus(); }catch{}
+                      if(el) try{ safeFocus(el as HTMLElement); }catch{}
                     }
                   }}
                 >{t('settings_apply')}</Button>
@@ -458,7 +507,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
-                      if(first) try{ first.focus(); }catch{}
+                      if(first) try{ safeFocus(first); }catch{}
                     }
                     if(k === keys.down || k === keys.up){
                       e.preventDefault(); e.stopPropagation();
@@ -468,7 +517,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                       const idx = arr.findIndex(a => a === active || (a && a.contains(active)));
                       const next = ( (idx >= 0 ? idx : 1) + dir + arr.length) % arr.length;
                       const el = arr[next];
-                      if(el) try{ (el as HTMLElement).focus(); }catch{}
+                      if(el) try{ safeFocus(el as HTMLElement); }catch{}
                     }
                   }}
                 >{t('settings_reset')}</Button>
@@ -484,7 +533,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                     if(k === keys.right){
                       e.preventDefault(); e.stopPropagation();
                       const first = btnRefs.current[0] as HTMLElement | null | undefined;
-                      if(first) try{ first.focus(); }catch{}
+                      if(first) try{ safeFocus(first); }catch{}
                     }
                     if(k === keys.down || k === keys.up){
                       e.preventDefault(); e.stopPropagation();
@@ -494,7 +543,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                       const idx = arr.findIndex(a => a === active || (a && a.contains(active)));
                       const next = ( (idx >= 0 ? idx : 2) + dir + arr.length) % arr.length;
                       const el = arr[next];
-                      if(el) try{ (el as HTMLElement).focus(); }catch{}
+                      if(el) try{ safeFocus(el as HTMLElement); }catch{}
                     }
                   }}
                 >{t('settings_back')}</Button>
@@ -510,7 +559,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
               </select>
             </div>
 
-            <section className={styles.right} ref={(el)=>{ rightColumnRef.current = el; }}>
+            <section className={styles.right} ref={(el)=>{ rightColumnRef.current = el; attachRightTrap(el); }}>
               {isDirty ? (
                 <div className={styles.unsavedBanner}>
                   <div>{t('settings_unsaved_changes') || 'You have unsaved changes'}</div>
@@ -545,7 +594,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
                         e.preventDefault(); e.stopPropagation();
                         const idx = withLabels.findIndex(s => s.id === section);
                         const navEl = navRefs.current[idx];
-                        if(navEl) try{ navEl.focus(); }catch{}
+                        if(navEl) try{ safeFocus(navEl); }catch{}
                       }
                     }}
                   >
