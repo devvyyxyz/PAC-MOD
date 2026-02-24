@@ -44,7 +44,9 @@ export default function Settings({onBack}:{onBack:()=>void}){
   // savedSettings is declared earlier; avoid duplicate declaration.
   useEffect(()=>{
     const cfg = config.loadConfig();
-    setLocal({...cfg.settings});
+    const initialSettings = {...cfg.settings};
+    setLocal(initialSettings);
+    try{ if(initialSettings && initialSettings.locale) setLocale(initialSettings.locale); }catch(_){ }
   },[]);
   
 
@@ -424,6 +426,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
         setSavedKeyboardEnabled(detail?.settings?.keyboardNavigation !== false);
         setSavedMouseEnabled(detail?.settings?.mouseNavigation !== false);
         setSavedSettings(detail?.settings || {});
+        try{ if(detail?.settings && detail.settings.locale) setLocale(detail.settings.locale); }catch(_){ }
       }catch(e){}
     }
     window.addEventListener('pacman.config.changed', onCfg as EventListener);
@@ -442,6 +445,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
       setSavedSettings(local);
       setSavedKeyboardEnabled(local.keyboardNavigation !== false);
       setSavedMouseEnabled(local.mouseNavigation !== false);
+      try{ if(local && local.locale) setLocale(local.locale); }catch(_){ }
       // notify listeners that config changed and was applied
       window.dispatchEvent(new CustomEvent('pacman.config.changed', { detail: { settings: local } }));
       window.dispatchEvent(new CustomEvent('pacman.config.applied', { detail: { settings: local } }));
@@ -457,6 +461,7 @@ export default function Settings({onBack}:{onBack:()=>void}){
     try{
       const defaults = { ...((DEFAULT_CONFIG && (DEFAULT_CONFIG.settings as any)) || {}) };
       setLocal(defaults);
+      try{ if(defaults && defaults.locale) setLocale(defaults.locale); }catch(_){ }
       config.saveConfig({ settings: defaults as any });
       setSavedSettings(defaults);
       setSavedKeyboardEnabled(defaults.keyboardNavigation !== false);
